@@ -42,8 +42,7 @@ public class MainActivity extends AppCompatActivity
     private static final byte left=33;
     private static final byte regiht=32;
     private static final byte[] resolution={48,72,90,95,113,120,126};
-    private static final byte[] value={0,0,0,0,113,0,0};
-    private static final byte[][] feature={{30,30},{28,29},{28,31},{32,33},{6,9},{33,30},{28,39}};
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
