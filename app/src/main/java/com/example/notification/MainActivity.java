@@ -113,10 +113,10 @@ public class MainActivity extends AppCompatActivity
         }
 
 
-        string = "\n\n" +
+        /*string = "\n\n" +
                 "距離:" + title.replaceAll("-.*", "") + "\n\n" +
                 "下個轉彎方向:" + direction + "轉" + "Cont:" + Cont + " Resolution:" + bitmapW + "\n\n" +
-                "到達時間:" + text + "\n\n";
+                "到達時間:" + text + "\n\n";*/
 
 
         new Thread(new Runnable() {
