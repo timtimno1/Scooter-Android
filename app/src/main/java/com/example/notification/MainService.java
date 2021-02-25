@@ -21,7 +21,7 @@ public class MainService extends Service {
                 while(true){
                     try{
                        Thread.sleep((10*1000));
-
+                       isNotificationMonitorService();
                     } catch (InterruptedException e) {}
                 }
             }
@@ -47,7 +47,7 @@ public class MainService extends Service {
         if (isRunning) {
             return;
         }
-
+        restartNotificationMonitorService();
     }
     private void restartNotificationMonitorService() { // 重新啟動 通知欄擷取
         ComponentName componentName = new ComponentName(this, NotificationMonitorService.class);
