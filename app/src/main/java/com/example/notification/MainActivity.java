@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity
 
         if (!isPurview(this))
         { // 檢查權限是否開啟，未開啟則開啟對話框
-            new AlertDialog.Builder(this)
+            new AlertDialog.Builder(MainActivity.this)
                     .setTitle("啟用通知欄擷取權限")
                     .setMessage("請啟用通知欄擷取權限")
                     .setIcon(R.mipmap.ic_launcher_round)
