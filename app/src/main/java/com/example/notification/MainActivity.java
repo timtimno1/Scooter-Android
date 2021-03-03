@@ -1,9 +1,13 @@
 package com.example.notification;
 
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -21,6 +25,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.widget.ImageView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import java.io.ByteArrayOutputStream;
@@ -33,8 +39,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class MainActivity extends AppCompatActivity
-{
+public class MainActivity extends AppCompatActivity implements RadioGroup.OnCheckedChangeListener{
     private static TextView textView;
     private static ImageView smallIcon, largeIcon;
     private static Icon bitmapIcon;//儲存通知訊息大圖示
@@ -44,15 +49,29 @@ public class MainActivity extends AppCompatActivity
     private static final byte[] resolution={48,72,90,95,113,120,126};
     private static final byte[] value={0,0,0,0,113,0,0};
     private static final byte[][] feature={{30,30},{28,29},{28,31},{32,33},{6,9},{33,30},{28,39}};
+    private RadioGroup rg_tab_bar;
+    private RadioButton rb_main;
 
+    //Fragment Object
+    private MyFragment main,locate;
+    private FragmentManager fManager;
+
+    private DrawerLayout mDrawerLayout;
+    private ActionBarDrawerToggle mToggle;
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        textView = (TextView) findViewById(R.id.textView);
-        largeIcon = (ImageView) findViewById(R.id.largeIcon);
+        /*textView = (TextView) findViewById(R.id.textView);*/
+        /*largeIcon = (ImageView) findViewById(R.id.largeIcon);*/
 
+        fManager = getSupportFragmentManager();
+        rg_tab_bar = (RadioGroup) findViewById(R.id.rg_tab_bar);
+        rg_tab_bar.setOnCheckedChangeListener(this);
+        //獲取第一個選單按鈕，設置為選取狀態
+        rb_main = (RadioButton) findViewById(R.id.rb_main);
+        rb_main.setChecked(true);
 
         if (!isPurview(this))
         { // 檢查權限是否開啟，未開啟則開啟對話框
@@ -73,6 +92,36 @@ public class MainActivity extends AppCompatActivity
         startService(new Intent(this, MainService.class));
     }
 
+    @Override
+    public void onCheckedChanged(RadioGroup group, int checkedId) {
+        FragmentTransaction fTransaction = fManager.beginTransaction();
+        hideAllFragment(fTransaction);
+        switch (checkedId){
+            case R.id.rb_main:
+                if(main == null){
+                    main = new MyFragment(1);
+                    fTransaction.add(R.id.ly_content,main);
+                }else{
+                    fTransaction.show(main);
+                }
+                break;
+            case R.id.rb_locate:
+                if(locate == null){
+                    locate = new MyFragment(2);
+                    fTransaction.add(R.id.ly_content,locate);
+                }else{
+                    fTransaction.show(locate);
+                }
+                break;
+        }
+        fTransaction.commit();
+    }
+
+    //隐藏所有Fragment
+    private void hideAllFragment(FragmentTransaction fragmentTransaction){
+        if(main != null)fragmentTransaction.hide(main);
+        if(locate != null)fragmentTransaction.hide(locate);
+    }
     private boolean isPurview(Context context)
     { // 檢查權限是否開啟 true = 開啟 ，false = 未開啟
         Set<String> packageNames = NotificationManagerCompat.getEnabledListenerPackages(context);
@@ -119,16 +168,16 @@ public class MainActivity extends AppCompatActivity
                 "到達時間:" + text + "\n\n";
 
 
-        new Thread(new Runnable() {
+        /*new Thread(new Runnable() {
             @Override
             public void run() {
                 Message msg = Message.obtain();
                 handler.sendMessage(msg);
             }
-        }).start();
+        }).start();*/
     }
 
-    private static Handler handler = new Handler() {
+    /*private static Handler handler = new Handler() {
         @RequiresApi(api = Build.VERSION_CODES.M)
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
@@ -139,7 +188,7 @@ public class MainActivity extends AppCompatActivity
             } catch (Exception e) {
             }
         }
-    };
+    };*/
 
     public static Bitmap drawableToBitmap (Drawable drawable) {
         Bitmap bitmap = null;
