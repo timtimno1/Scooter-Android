@@ -6,6 +6,14 @@
         <!-- Customize your theme here. -->
     </style>
 
+    <!-- 隱藏標題及狀態列 -->
+    <style name="AppTheme.NoActionBar" parent="AppTheme">
+        <item name="windowNoTitle">true</item>
+        <item name="windowActionBar">true</item>
+        <item name="android:windowFullscreen">false</item>
+    </style>
+
+    <!-- 底部導航欄圖片規格-->
     <style name="tab_menu_item">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_weight">1</item>
@@ -17,5 +25,4 @@
         <item name="android:textColor">@drawable/tab_menu_text</item>
         <item name="android:textSize">18sp</item>
     </style>
-
 </resources>

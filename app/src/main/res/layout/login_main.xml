@@ -66,14 +66,13 @@
         android:id="@+id/editTextUsername"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:autofillHints=""
         android:ems="10"
         android:hint="@string/account_src"
         android:inputType="textPersonName"
         app:layout_constraintBottom_toTopOf="@+id/editTextPassword"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline3" />
+        app:layout_constraintTop_toTopOf="@+id/guideline3"/>
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline5"
@@ -88,6 +87,7 @@
         android:layout_height="72dp"
         android:background="#FFFFFF"
         android:text="@string/register_pic"
+        android:textColor="#000000"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/guideline2"
         app:layout_constraintHorizontal_bias="0.0"
@@ -99,6 +99,7 @@
         android:layout_height="72dp"
         android:background="#FFFFFF"
         android:text="@string/sign_pic"
+        android:textColor="#000000"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
