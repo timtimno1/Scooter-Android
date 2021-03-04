@@ -1,26 +1,13 @@
 package com.example.notification;
 
-import android.annotation.SuppressLint;
 import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.app.Service;
-import android.content.Context;
-import android.content.pm.PackageManager;
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Rect;
-import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
 import android.os.Build;
 import android.os.Bundle;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
-
 import androidx.annotation.RequiresApi;
-import androidx.core.app.NotificationCompat;
+import tool.NotificationCatchForGoogleMap;
 
 public class NotificationMonitorService extends NotificationListenerService {
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -39,7 +26,7 @@ public class NotificationMonitorService extends NotificationListenerService {
             } catch (PackageManager.NameNotFoundException e) {
                 e.printStackTrace();
             }*/
-            MainActivity.show(packageName, title, text, largeIcon,this);//傳送資料
+            NotificationCatchForGoogleMap.show(packageName, title, text, largeIcon,this);//傳送資料
         }
     }
 }

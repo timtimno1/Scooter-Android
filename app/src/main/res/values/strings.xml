@@ -23,6 +23,7 @@
     <string name="email">email</string>
     <string name="telephone">telephone</string>
     <string name="create_account">creat_account</string>
+    <string name="keep_account">是否要記住登入資料</string>>
     <string name="tab_menu_main">首頁</string>
     <string name="tab_menu_locate">地圖</string>
     <string name="tab_menu_title">Scooter</string>
