@@ -37,10 +37,14 @@ public class NotificationCatchForGoogleMap
             biArray=getBytesByBitmap(bi);
             for(byte i:biArray)
                 if(i==value[index])Cont++;
-            if(Cont==feature[index][0])
-                direction="右";
-            else if (Cont==feature[index][1])
-                direction="左";
+            if(Cont==feature[index][0]) {
+                direction = "右";
+                send(new byte[]{0});
+            }
+            else if (Cont==feature[index][1]) {
+                direction = "左";
+                send(new byte[]{1});
+            }
         }
         catch (Exception e)
         {
@@ -52,7 +56,7 @@ public class NotificationCatchForGoogleMap
                 "距離:" + title.replaceAll("-.*", "") + "\n\n" +
                 "下個轉彎方向:" + direction + "轉" + "Cont:" + Cont + " Resolution:" + bitmapW + "\n\n" +
                 "到達時間:" + text + "\n\n";
-
+        System.out.println(string);
 
         /*new Thread(new Runnable() {
             @Override
@@ -75,7 +79,17 @@ public class NotificationCatchForGoogleMap
             }
         }
     };*/
-
+    private  static void send(byte[] i)
+    {
+        MyBluetoothService temp=new MyBluetoothService();
+        MyBluetoothService.ConnectedThread ii =temp.new ConnectedThread(ConnectThread.mmSocket);
+        ii.write(i);
+        try {
+            Thread.sleep((2*1000));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
     public static Bitmap drawableToBitmap (Drawable drawable) {
         Bitmap bitmap = null;
 
