@@ -8,30 +8,23 @@ import android.bluetooth.BluetoothSocket;
 import android.companion.AssociationRequest;
 import android.companion.BluetoothDeviceFilter;
 import android.companion.CompanionDeviceManager;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.fragment.app.Fragment;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Set;
-import java.util.UUID;
 import java.util.regex.Pattern;
-
 import tool.ConnectThread;
-import tool.MyBluetoothService;
 
 import static android.content.ContentValues.TAG;
 
@@ -44,6 +37,7 @@ public class MyFragment extends Fragment {
     private BluetoothDeviceFilter deviceFilter;
     private  BluetoothSocket mmSocket;
     private ProgressDialog dialog;
+    private TextView connectStatus;
     Set<BluetoothDevice> pairedDevices =  BluetoothAdapter.getDefaultAdapter().getBondedDevices();
 
     public MyFragment(int content) {
@@ -52,21 +46,47 @@ public class MyFragment extends Fragment {
 
 
 
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        if(this.num==1) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    {
+        if(this.num==1)
+        {
+            //view
             View view = inflater.inflate(R.layout.fragment_main, container, false);
+            //button
             Button Bluetooth = (Button) view.findViewById(R.id.button5);
             Button send=(Button) view.findViewById(R.id.button);
+            //textView
+            connectStatus=(TextView) view.findViewById(R.id.connectStatus);
+            //buttonListener
             send.setOnClickListener(v -> send());
             Bluetooth.setOnClickListener(v -> connect());
+
+            BroadcastReceiver receiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    // 處理 Service 傳來的訊息。
+                    Bundle message = intent.getExtras();
+                    int status = message.getInt("connectStatus");
+                    if(status==MainService.connect)
+                        connectStatus.setText(" 已連線");
+                    else if(status==MainService.disconnect)
+                        connectStatus.setText("連線中斷");
+                }
+            };
+
+            IntentFilter filter = new IntentFilter("MainService");
+            // 將 BroadcastReceiver 在 Activity 掛起來。
+            requireActivity().registerReceiver(receiver, filter);
             return view;
         }
-        else{
+        else
+        {
             View view = inflater.inflate(R.layout.locate, container, false);
             return view;
         }
-        /*TextView txt_content = (TextView) view.findViewById(R.id.txt_content);
-        txt_content.setText(content);*/
+
+
+
     }
 
     private void bluetoothPair()
@@ -166,29 +186,14 @@ public class MyFragment extends Fragment {
 
     private void connect()
     {
-        if (pairedDevices.size() > 0)
-        {
-            // There are paired devices. Get the name and address of each paired device.
-            for (BluetoothDevice device : pairedDevices)
-            {
-                String deviceName = device.getName();
-                String deviceHardwareAddress = device.getAddress(); // MAC address
-                if("raspberrypi".equals(deviceName))
-                {
-                    ConnectThread ii =new ConnectThread( BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceHardwareAddress));
-                    ii.start();
-                    break;
-                }
-            }
-        }
+        Intent intent=new Intent(getContext(),MainService.class);
+        getContext().startService(intent);
     }
 
     private void send()
     {
-        MyBluetoothService temp=new MyBluetoothService();
-        MyBluetoothService.ConnectedThread ii =temp.new ConnectedThread(ConnectThread.mmSocket);
-        byte[] i={0,0,1,2,5,4,8,4,7,5,2,4,4,7,4,4,4,5,6};
-        ii.write(i);
+        Intent intent=new Intent(getContext(),MainService.class);
+        getContext().stopService(intent);
     }
 }
 

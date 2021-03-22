@@ -32,9 +32,12 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
+import internet.Internet;
+
 import static android.content.ContentValues.TAG;
 
-public class MainActivity extends AppCompatActivity implements RadioGroup.OnCheckedChangeListener {
+public class MainActivity extends AppCompatActivity implements RadioGroup.OnCheckedChangeListener
+{
 
     private RadioGroup rg_tab_bar;
     private RadioButton rb_main;
@@ -47,9 +50,12 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
 
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        //Start service
+        Log.e("MainActivity", "000");
 
         init();
         if (pairedDevices.size() > 0)
@@ -67,14 +73,14 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
         if (!isPurview(this))// 檢查權限是否開啟，未開啟則開啟對話框
         {
             new AlertDialog.Builder(MainActivity.this)// 跳轉自開啟權限畫面，權限開啟後通知欄擷取服務將自動啟動。
-                    .setTitle("啟用通知欄擷取權限")
+                    .setTitle("啟用通知欄權限")
                     .setMessage("請啟用通知欄擷取權限")
                     .setIcon(R.mipmap.ic_launcher_round)
                     .setCancelable(false)
                     .setPositiveButton("開啟", (d,w)-> super.startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")))// 對話框按鈕事件
                     .show();
         }
-        startService(new Intent(this, MainService.class));
+
     }
 
     @Override

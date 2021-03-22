@@ -1,6 +1,7 @@
 package tool;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
@@ -8,10 +9,17 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
 import android.os.Build;
 import androidx.annotation.RequiresApi;
+
+import com.example.notification.MainService;
+
 import java.io.ByteArrayOutputStream;
 
 public class NotificationCatchForGoogleMap
 {
+    private static final int noDir=0;
+    private static final int right=1;
+    private static final int left=2;
+    private static int dirStatus=noDir;
     private static Icon bitmapIcon;
     private static String string;//儲存包名、標題、內容文字
     private static final byte[] resolution={48,72,90,95,113,120,126};
@@ -37,13 +45,23 @@ public class NotificationCatchForGoogleMap
             biArray=getBytesByBitmap(bi);
             for(byte i:biArray)
                 if(i==value[index])Cont++;
-            if(Cont==feature[index][0]) {
-                direction = "右";
-                send(new byte[]{0});
+            if(dirStatus==noDir)
+            {
+                if(Cont==feature[index][0])
+                {
+                    direction = "右";
+                    dirStatus=right;
+                    send(new byte[]{0});
+                }
+                else if (Cont==feature[index][1]) {
+                    direction = "左";
+                    dirStatus = left;
+                    send(new byte[]{1});
+                }
             }
-            else if (Cont==feature[index][1]) {
-                direction = "左";
-                send(new byte[]{1});
+            else if( Cont!=feature[index][0] && Cont!=feature[index][1])
+            {
+                dirStatus=noDir;
             }
         }
         catch (Exception e)
@@ -81,14 +99,8 @@ public class NotificationCatchForGoogleMap
     };*/
     private  static void send(byte[] i)
     {
-        MyBluetoothService temp=new MyBluetoothService();
-        MyBluetoothService.ConnectedThread ii =temp.new ConnectedThread(ConnectThread.mmSocket);
+        MyBluetoothService ii=new MyBluetoothService(MainService.getConnectThread());
         ii.write(i);
-        try {
-            Thread.sleep((2*1000));
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
     public static Bitmap drawableToBitmap (Drawable drawable) {
         Bitmap bitmap = null;
