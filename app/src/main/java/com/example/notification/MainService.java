@@ -22,6 +22,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import tool.ConnectThread;
+import tool.MyBluetoothService;
 
 public class MainService extends Service
 {
@@ -35,6 +36,8 @@ public class MainService extends Service
     private Intent intent=new Intent("MainService");
     private Timer timer=new Timer();
     private TimerTask task;
+
+
     public void onCreate()
     {
         super.onCreate();
@@ -83,13 +86,15 @@ public class MainService extends Service
 
         intent.putExtras(message);
         sendBroadcast(intent);
+        MyBluetoothService myBluetoothService=new MyBluetoothService(ii);
+        myBluetoothService.enableReadData();
 
         task=new TimerTask() {
             @Override
             public void run() {
                 Boolean temp=mmSocket.isConnected();
                 Log.d("run",temp.toString());
-                if(!mmSocket.isConnected())
+                if(!myBluetoothService.isConnected())
                 {
                     NotificationMonitorService.sentStatus=false;
                     message.putInt("connectStatus",disconnect);
@@ -115,6 +120,8 @@ public class MainService extends Service
         Log.e("Service", "onCreate");
         //stopSelf();
     }
+
+
     private void isNotificationMonitorService(){
         // 檢查通知欄擷取是否失效，
         // 如果失效 將呼叫 restartNotificationMonitorService() 重新啟動 通知欄擷取

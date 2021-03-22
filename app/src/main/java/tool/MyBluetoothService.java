@@ -1,5 +1,7 @@
 package tool;
 import android.bluetooth.BluetoothSocket;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -17,7 +19,9 @@ public class MyBluetoothService
     private final InputStream mmInStream;
     private final OutputStream mmOutStream;
     private byte[] mmBuffer; // mmBuffer store for the stream
-
+    private Bundle message=new Bundle();
+    private Intent intent=new Intent("MyBluetoothService");
+    private boolean isConnected;
 
     public MyBluetoothService(ConnectThread connectThread)
     {
@@ -56,6 +60,10 @@ public class MyBluetoothService
                 {
                     // Read from the InputStream.
                     numBytes = mmInStream.read(mmBuffer);
+                    if(mmBuffer[0]==37)
+                        isConnected=true;
+                    else
+                        isConnected=false;
 
                     // Send the obtained bytes to the UI activity.
                    /* Message readMsg = handler.obtainMessage(
@@ -65,6 +73,7 @@ public class MyBluetoothService
                 }
                 catch (IOException e)
                 {
+                    isConnected=false;
                     Log.d(TAG, "Input stream was disconnected", e);
                     break;
                 }
@@ -109,10 +118,14 @@ public class MyBluetoothService
         }
     }
 
-    public byte[] readData()
+    public void enableReadData()
     {
-        readThread in=new readThread();
-        return
+        readThread i=new readThread();
+        i.start();
+    }
+    public boolean isConnected()
+    {
+        return isConnected;
     }
     // Call this method from the main activity to shut down the connection.
     public void cancel()
