@@ -59,7 +59,9 @@ public class MyBluetoothService
                 try
                 {
                     // Read from the InputStream.
+
                     numBytes = mmInStream.read(mmBuffer);
+                    Log.e(TAG,String.valueOf(numBytes));
                     if(mmBuffer[0]==37)
                         isConnected=true;
                     else

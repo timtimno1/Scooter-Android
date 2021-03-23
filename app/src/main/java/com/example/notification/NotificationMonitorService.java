@@ -19,11 +19,7 @@ public class NotificationMonitorService extends NotificationListenerService {
         String packageName = sbn.getPackageName(); // 取得應用程式包名
 
         if (packageName.equals("com.google.android.apps.maps") && sentStatus) {//判斷只接收google map通知{
-            try {
-                Thread.sleep((2*1000));
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+
             String title = extras.getString(Notification.EXTRA_TITLE); // 取得通知欄標題
             String text = extras.getString(Notification.EXTRA_TEXT); // 取得通知欄文字
             Icon largeIcon = sbn.getNotification().getLargeIcon();

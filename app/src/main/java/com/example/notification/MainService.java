@@ -92,8 +92,8 @@ public class MainService extends Service
         task=new TimerTask() {
             @Override
             public void run() {
-                Boolean temp=mmSocket.isConnected();
-                Log.d("run",temp.toString());
+                Boolean temp=myBluetoothService.isConnected();
+                Log.e("run",temp.toString());
                 if(!myBluetoothService.isConnected())
                 {
                     NotificationMonitorService.sentStatus=false;
@@ -112,7 +112,7 @@ public class MainService extends Service
                 isNotificationMonitorService();
             }
         };
-        timer.schedule(task, 1000,1000);
+        timer.schedule(task, 5000,1000);
 
         mp=MediaPlayer.create(this, Settings.System.DEFAULT_RINGTONE_URI);
         mp.setLooping(true);

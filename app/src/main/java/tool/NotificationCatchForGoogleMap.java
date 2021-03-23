@@ -8,11 +8,15 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
 import android.os.Build;
+import android.util.Log;
+
 import androidx.annotation.RequiresApi;
 
 import com.example.notification.MainService;
 
 import java.io.ByteArrayOutputStream;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class NotificationCatchForGoogleMap
 {
@@ -22,9 +26,10 @@ public class NotificationCatchForGoogleMap
     private static int dirStatus=noDir;
     private static Icon bitmapIcon;
     private static String string;//儲存包名、標題、內容文字
-    private static final byte[] resolution={48,72,90,95,113,120,126};
-    private static final byte[] value={0,0,0,0,113,0,0};
-    private static final byte[][] feature={{30,30},{28,29},{28,31},{32,33},{6,9},{33,30},{28,39}};
+    private static String direction="無";
+    private static final byte[] resolution={36,48,72,90,95,113,120,126};
+    private static final byte[] value={0,0,0,0,0,113,0,0};
+    private static final byte[][] feature={{28,35},{30,30},{28,29},{28,31},{32,33},{6,9},{33,30},{28,39}};
 
     //接收資料
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -32,20 +37,37 @@ public class NotificationCatchForGoogleMap
     {
 
         int Cont=0;
-        String direction="無";
+
         bitmapIcon = large;
         Bitmap bi;
         int index;
         byte[] biArray;
         byte bitmapW=0;
-        try {
+        int dis=-1;
+
+        Pattern pattern=Pattern.compile("^\\d+");
+        Matcher matcher=pattern.matcher(title);
+        if(matcher.find())
+            dis=Integer.parseInt(matcher.group().trim());
+
+        try
+        {
             bi=drawableToBitmap (bitmapIcon.loadDrawable(ct));
             bitmapW=(byte)bi.getWidth();
             index=find(bitmapW);
             biArray=getBytesByBitmap(bi);
-            for(byte i:biArray)
-                if(i==value[index])Cont++;
+
+
+            for(int i=0;i<biArray.length;i++)
+                if(biArray[i]==value[index])Cont++;
+
             if(dirStatus==noDir)
+                if(Cont==feature[index][0])
+                    direction = "右";
+                else if (Cont==feature[index][1])
+                    direction = "左";
+
+            if(dis>0 && dis<50 && dirStatus==noDir)
             {
                 if(Cont==feature[index][0])
                 {
@@ -59,8 +81,10 @@ public class NotificationCatchForGoogleMap
                     send(new byte[]{1});
                 }
             }
-            else if( Cont!=feature[index][0] && Cont!=feature[index][1])
+            else if( dis>50 || dis<0)
             {
+                if(dirStatus==right || dirStatus==left)
+                    send(new byte[]{2});
                 dirStatus=noDir;
             }
         }
@@ -74,8 +98,8 @@ public class NotificationCatchForGoogleMap
                 "距離:" + title.replaceAll("-.*", "") + "\n\n" +
                 "下個轉彎方向:" + direction + "轉" + "Cont:" + Cont + " Resolution:" + bitmapW + "\n\n" +
                 "到達時間:" + text + "\n\n";
-        System.out.println(string);
 
+        Log.d("google map",string);
         /*new Thread(new Runnable() {
             @Override
             public void run() {
