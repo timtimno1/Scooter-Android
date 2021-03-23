@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.notification">
-
     <!--
          The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
          Google Maps Android API v2, but you must specify either coarse or fine
          location permissions for the "MyLocation" functionality.
     -->
-    <!--<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" /> -->
+    <!-- <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" /> -->
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-    <uses-permission android:name="android.permission.INTERNET" />              <!--註冊網路服務 -->
-    <uses-feature android:name="android.software.companion_device_setup"/>.
+    <uses-permission android:name="android.permission.INTERNET" /> <!-- 註冊網路服務 -->
+    <uses-feature android:name="android.software.companion_device_setup" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -19,8 +19,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
-        <!--關閉狀態列、標題 android:theme= "@style/AppTheme.NoActionBar" -->
-
+        <!-- 關閉狀態列、標題 android:theme= "@style/AppTheme.NoActionBar" -->
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").
@@ -31,22 +30,20 @@
         -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="@string/google_maps_key" />
-        <!--API map key in value -->
+            android:value="@string/google_maps_key" /> <!-- API map key in value -->
         <activity
             android:name=".locate"
-            android:label="@string/title_activity_locate"></activity>
-        <!-- -android:usesCleartextTraffic="true" -->
+            android:label="@string/title_activity_locate" /> <!-- -android:usesCleartextTraffic="true" -->
         <activity android:name=".MainActivity" />
-        <activity android:name=".Register" />
+        <activity android:name=".Register"/>
         <activity android:name=".LoginMain">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-        <!-- 註冊通知欄擷取的服務 NotificationMonitorService -->
+        </activity> <!-- 註冊通知欄擷取的服務 NotificationMonitorService -->
         <service
             android:name=".NotificationMonitorService"
             android:label="NotificationMonitor"
@@ -57,4 +54,5 @@
         </service>
         <service android:name=".MainService" />
     </application>
+
 </manifest>

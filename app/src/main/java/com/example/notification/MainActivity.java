@@ -1,10 +1,15 @@
 package com.example.notification;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.NotificationManagerCompat;
-import androidx.fragment.app.FragmentManager;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.navigation.ui.AppBarConfiguration;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -19,23 +24,20 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.os.Build;
 import android.os.Bundle;
-import android.view.View;
+import android.view.MenuItem;
 import android.widget.Button;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.Toast;
+
+import com.google.android.material.navigation.NavigationView;
 
 import java.util.Set;
 import java.util.regex.Pattern;
 
-public class MainActivity extends AppCompatActivity implements RadioGroup.OnCheckedChangeListener {
+import Fragment.MainFragment;
+import Fragment.SettingFragment;
 
-    private RadioGroup rg_tab_bar;
-    private RadioButton rb_main;
+public class MainActivity extends AppCompatActivity  implements NavigationView.OnNavigationItemSelectedListener{
 
-    //Fragment Object
-    private MyFragment main, locate;
-    private FragmentManager fManager;
     //Bluetooth
     private Button Bluetooth;
     private CompanionDeviceManager deviceManager;
@@ -44,6 +46,11 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
 
     private ProgressDialog dialog;
 
+    private AppBarConfiguration mAppBarConfiguration;
+
+    private DrawerLayout drawer;
+    private Toolbar toolbar;
+    private NavigationView navigationView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,38 +75,29 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
                     ).show();
         }
         startService(new Intent(this, MainService.class));
+
+        drawer = findViewById(R.id.drawer_layout);
+        toolbar = findViewById(R.id.toolbar);
+        navigationView = findViewById(R.id.nav_view);
+        setSupportActionBar(toolbar);
+        navigationView.setNavigationItemSelectedListener(this);
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        actionBar.setHomeAsUpIndicator(R.drawable.ic_homic);
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.replace(R.id.navi_fragment,new MainFragment());
+        ft.commit();
+
+        navigationView.setCheckedItem(R.id.nav_home);
+        /*ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.drawer_open, R.string.drawer_close);
+        actionBarDrawerToggle.syncState();
+        drawer.addDrawerListener(actionBarDrawerToggle);*/
+
+    }
+    public void setActionBarTitle(String title) {
+        getSupportActionBar().setTitle(title);
     }
 
-    @Override
-    public void onCheckedChanged(RadioGroup group, int checkedId) {
-        FragmentTransaction fTransaction = fManager.beginTransaction();
-        hideAllFragment(fTransaction);
-        switch (checkedId) {
-            case R.id.rb_main:
-                if (main == null) {
-                    main = new MyFragment(1);
-                    fTransaction.add(R.id.ly_content, main);
-                } else {
-                    fTransaction.show(main);
-                }
-                break;
-            case R.id.rb_locate:
-                if (locate == null) {
-                    locate = new MyFragment(2);
-                    fTransaction.add(R.id.ly_content, locate);
-                } else {
-                    fTransaction.show(locate);
-                }
-                break;
-        }
-        fTransaction.commit();
-    }
-
-    //隐藏所有Fragment
-    private void hideAllFragment(FragmentTransaction fragmentTransaction) {
-        if (main != null) fragmentTransaction.hide(main);
-        if (locate != null) fragmentTransaction.hide(locate);
-    }
 
     private boolean isPurview(Context context) { // 檢查權限是否開啟 true = 開啟 ，false = 未開啟
         Set<String> packageNames = NotificationManagerCompat.getEnabledListenerPackages(context);
@@ -110,13 +108,8 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
     }
 
     private void init() {
-        fManager = getSupportFragmentManager();
-        rg_tab_bar = (RadioGroup) findViewById(R.id.rg_tab_bar);
-        rg_tab_bar.setOnCheckedChangeListener(this);
-        //獲取第一個選單按鈕，設置為選取狀態
-        rb_main = (RadioButton) findViewById(R.id.rb_main);
-        rb_main.setChecked(true);
-        Bluetooth = (Button) findViewById(R.id.button5);
+        //Bluetooth = (Button) findViewById(R.id.button5);
+
     }
 
     private void initListener()
@@ -194,6 +187,67 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
         else
         {
             Toast.makeText(getApplicationContext(), "請確認裝置已開機", Toast.LENGTH_SHORT).show();
+        }
+    }
+    /*@Override
+    public boolean onSupportNavigateUp() {
+        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
+        return NavigationUI.navigateUp(navController, mAppBarConfiguration)
+                || super.onSupportNavigateUp();
+    }*/
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch(item.getItemId()){
+            case android.R.id.home:
+                drawer.openDrawer(GravityCompat.START);
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+    @Override//側邊選單欄按下動作
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        switch(item.getItemId()){
+            case R.id.nav_home:
+                ft.replace(R.id.navi_fragment,new MainFragment());
+                ft.commit();
+                break;
+            case R.id.nav_setting:
+                ft.replace(R.id.navi_fragment,new SettingFragment());
+                ft.commit();
+                Toast.makeText(MainActivity.this,"This is setting",Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.nav_logout:
+                new AlertDialog.Builder(MainActivity.this)
+                        .setTitle("Logout")
+                        .setMessage("Are you sure you want to Logout?")
+                        .setPositiveButton("Yes", new DialogInterface.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                Intent intent3 = new Intent();
+                                intent3.setClass(MainActivity.this, LoginMain.class);
+                                startActivity(intent3);
+                                finish();
+                            }
+
+                        })
+                        .setNegativeButton("No", null)
+                        .show();
+                break;
+        }
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
+    }
+
+    @Override//按下返回建關閉側邊選單欄
+    public void onBackPressed() {
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        }
+        else{
+            super.onBackPressed();
         }
     }
 }

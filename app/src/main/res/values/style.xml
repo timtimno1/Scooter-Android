@@ -9,7 +9,7 @@
     <!-- 隱藏標題及狀態列 -->
     <style name="AppTheme.NoActionBar" parent="AppTheme">
         <item name="windowNoTitle">true</item>
-        <item name="windowActionBar">true</item>
+        <item name="windowActionBar">false</item>
         <item name="android:windowFullscreen">false</item>
     </style>
 
@@ -23,6 +23,6 @@
         <item name="android:paddingTop">3dp</item>
         <item name="android:background">@drawable/tab_menu_bg</item>
         <item name="android:textColor">@drawable/tab_menu_text</item>
-        <item name="android:textSize">18sp</item>
+        <item name="android:textSize">16sp</item>
     </style>
 </resources>
