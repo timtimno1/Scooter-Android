@@ -1,20 +1,14 @@
 package com.example.notification;
 
 import android.content.Intent;
-import android.media.MediaSync;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.EdgeEffect;
 import android.widget.EditText;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
-
 import java.util.HashMap;
-
 import internet.HttpConnect;
 import internet.Internet;
 import tool.KeyStoreHelper;
@@ -35,29 +29,14 @@ public class LoginMain extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login_main);
-        sharedPreferencesHelper =new SharedPreferencesHelper(getApplicationContext());
-        keyStoreHelper=new KeyStoreHelper(getApplicationContext(),sharedPreferencesHelper);
 
-        loginButton = (Button)findViewById(R.id.button2);
-        registerButton=(Button)findViewById(R.id.button1);
-        account=(EditText)findViewById(R.id.editTextUsername);
-        password=(EditText)findViewById(R.id.editTextPassword);
-        rememberCheck=(CheckBox)findViewById(R.id.checkBox2);
-        registerButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent =new Intent();
-                intent.setClass(LoginMain.this,Register.class);
-                startActivity(intent);
-            }
-        });
-        loginButton.setOnClickListener(new Button.OnClickListener()
+        init();
+        loginButton.setOnClickListener(v -> login());
+        registerButton.setOnClickListener(v ->
         {
-            @Override
-            public void onClick(View v)
-            {
-                login();
-            }
+            Intent intent =new Intent();
+            intent.setClass(LoginMain.this,Register.class);
+            startActivity(intent);
         });
         if(!sharedPreferencesHelper.getString("Account").equals(""))
         {
@@ -115,6 +94,20 @@ public class LoginMain extends AppCompatActivity
         ru.execute(userName, password);
     }
 
+    private void init()
+    {
+        //PasswordKeep
+        sharedPreferencesHelper =new SharedPreferencesHelper(getApplicationContext());
+        keyStoreHelper=new KeyStoreHelper(getApplicationContext(),sharedPreferencesHelper);
+        //Button
+        loginButton = (Button)findViewById(R.id.button2);
+        registerButton=(Button)findViewById(R.id.button1);
+        //EditText
+        account=(EditText)findViewById(R.id.editTextUsername);
+        password=(EditText)findViewById(R.id.editTextPassword);
+        //CheckBox
+        rememberCheck=(CheckBox)findViewById(R.id.checkBox2);
+    }
     private void keepPassword(String account,String password)
     {
         String passwordEnc=keyStoreHelper.encrypt(password);

@@ -8,14 +8,14 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.navigation.ui.AppBarConfiguration;
-
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.companion.AssociationRequest;
-
 import android.companion.BluetoothDeviceFilter;
 import android.companion.CompanionDeviceManager;
 import android.content.Context;
@@ -25,56 +25,78 @@ import android.content.IntentSender;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.os.Handler;
+import android.os.Message;
+import android.util.Log;
 import android.widget.Button;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Toast;
-
 import com.google.android.material.navigation.NavigationView;
-
+import android.bluetooth.BluetoothAdapter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Set;
+import java.util.UUID;
 import java.util.regex.Pattern;
-
 import Fragment.MainFragment;
+import Fragment.MyFragment;
 import Fragment.SettingFragment;
+import internet.Internet;
+import static android.content.ContentValues.TAG;
 
-public class MainActivity extends AppCompatActivity  implements NavigationView.OnNavigationItemSelectedListener{
 
-    //Bluetooth
-    private Button Bluetooth;
-    private CompanionDeviceManager deviceManager;
-    private AssociationRequest pairingRequest;
-    private BluetoothDeviceFilter deviceFilter;
+public class MainActivity extends AppCompatActivity  implements NavigationView.OnNavigationItemSelectedListener
+{
 
-    private ProgressDialog dialog;
+    private RadioGroup rg_tab_bar;
+    private RadioButton rb_main;
+    //Fragment Object
+    private MyFragment main, locate;
+    private FragmentManager fManager;
+
+    Set<BluetoothDevice> pairedDevices =  BluetoothAdapter.getDefaultAdapter().getBondedDevices();
 
     private AppBarConfiguration mAppBarConfiguration;
 
     private DrawerLayout drawer;
     private Toolbar toolbar;
     private NavigationView navigationView;
+	
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        //Start service
+        Log.e("MainActivity", "000");
 
         init();
+        if (pairedDevices.size() > 0)
+        {
+            // There are paired devices. Get the name and address of each paired device.
+            for (BluetoothDevice device : pairedDevices)
+            {
+                String deviceName = device.getName();
+                String deviceHardwareAddress = device.getAddress(); // MAC address
+                System.out.println("Name: " + deviceName +  " Address: " + deviceHardwareAddress);
+            }
+        }
         //initListener();
-        bluetoothPair();
-        if (!isPurview(this)) { // 檢查權限是否開啟，未開啟則開啟對話框
-            new AlertDialog.Builder(MainActivity.this)
-                    .setTitle("啟用通知欄擷取權限")
+        //bluetoothPair();
+        if (!isPurview(this))// 檢查權限是否開啟，未開啟則開啟對話框
+        {
+            new AlertDialog.Builder(MainActivity.this)// 跳轉自開啟權限畫面，權限開啟後通知欄擷取服務將自動啟動。
+                    .setTitle("啟用通知欄權限")
                     .setMessage("請啟用通知欄擷取權限")
                     .setIcon(R.mipmap.ic_launcher_round)
                     .setCancelable(false)
-                    .setPositiveButton("開啟", new DialogInterface.OnClickListener() { // 對話框按鈕事件
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    // 跳轉自開啟權限畫面，權限開啟後通知欄擷取服務將自動啟動。
-                                    startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));
-                                }
-                            }
-                    ).show();
+                    .setPositiveButton("開啟", (d,w)-> super.startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")))// 對話框按鈕事件
+                    .show();
         }
-        startService(new Intent(this, MainService.class));
+
+
 
         drawer = findViewById(R.id.drawer_layout);
         toolbar = findViewById(R.id.toolbar);
@@ -99,9 +121,12 @@ public class MainActivity extends AppCompatActivity  implements NavigationView.O
     }
 
 
-    private boolean isPurview(Context context) { // 檢查權限是否開啟 true = 開啟 ，false = 未開啟
+    private boolean isPurview(Context context) // 檢查權限是否開啟 true = 開啟 ，false = 未開啟
+	{ 
+
         Set<String> packageNames = NotificationManagerCompat.getEnabledListenerPackages(context);
-        if (packageNames.contains(context.getPackageName())) {
+        if (packageNames.contains(context.getPackageName()))
+        {
             return true;
         }
         return false;
@@ -110,64 +135,6 @@ public class MainActivity extends AppCompatActivity  implements NavigationView.O
     private void init() {
         //Bluetooth = (Button) findViewById(R.id.button5);
 
-    }
-
-    private void initListener()
-    {
-        Bluetooth.setOnClickListener(v -> bluetoothPair());
-    }
-
-    private void bluetoothPair() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-        {
-            dialog=new ProgressDialog(this);
-            dialog.setTitle("掃描中");
-            dialog.show();
-            deviceManager = getSystemService(CompanionDeviceManager.class);
-
-            deviceFilter = new BluetoothDeviceFilter.Builder()
-                    .setNamePattern(Pattern.compile("MI Portable Bluetooth Speaker"))
-                    .build();
-
-            pairingRequest = new AssociationRequest.Builder()
-                    .addDeviceFilter(deviceFilter)
-                    .setSingleDevice(true)
-                    .build();
-
-            deviceManager.associate(pairingRequest,
-                    new CompanionDeviceManager.Callback()
-                    {
-                        @Override
-                        public void onDeviceFound(IntentSender chooserLauncher)
-                        {
-                            try
-                            {
-                                startIntentSenderForResult(chooserLauncher,
-                                        42, null, 0, 0, 0);
-                            }
-                            catch (IntentSender.SendIntentException e)
-                            {
-                                e.printStackTrace();
-                            }
-                            finally
-                            {
-                                dialog.dismiss();
-                            }
-                        }
-
-                        @Override
-                        public void onFailure(CharSequence error)
-                        {
-                            dialog.dismiss();
-                            Toast.makeText(getApplicationContext(), "請確認裝置已開機", Toast.LENGTH_SHORT).show();
-                        }
-                    },
-                    null);
-        }
-        else
-        {
-            Toast.makeText(getApplicationContext(), "Not supper Android version", Toast.LENGTH_SHORT).show();
-        }
     }
 
     @Override
@@ -188,6 +155,7 @@ public class MainActivity extends AppCompatActivity  implements NavigationView.O
         {
             Toast.makeText(getApplicationContext(), "請確認裝置已開機", Toast.LENGTH_SHORT).show();
         }
+
     }
     /*@Override
     public boolean onSupportNavigateUp() {
