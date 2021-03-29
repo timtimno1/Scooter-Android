@@ -13,6 +13,8 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.example.notification.MainActivity;
 import com.example.notification.R;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.example.notification.locate;
 
 public class MainFragment extends Fragment implements RadioGroup.OnCheckedChangeListener{
     private RadioGroup rg_tab_bar;
@@ -22,7 +24,7 @@ public class MainFragment extends Fragment implements RadioGroup.OnCheckedChange
     private MyFragment main, locate;
     //private MainFragment fragment_main;
     private FragmentManager fManager;
-
+    SupportMapFragment mapFragment ;
     public MainFragment() {
         // Required empty public constructor
     }
@@ -55,11 +57,13 @@ public class MainFragment extends Fragment implements RadioGroup.OnCheckedChange
                 }
                 break;
             case R.id.rb_locate:
-                if (locate == null) {
-                    locate = new MyFragment(2);
-                    fTransaction.add(R.id.ly_content, locate);
+                if (mapFragment == null) {
+                    com.example.notification.locate ii=new locate();
+                    mapFragment = SupportMapFragment.newInstance();
+                    mapFragment.getMapAsync(ii);
+                    fTransaction.add(R.id.ly_content, mapFragment);
                 } else {
-                    fTransaction.show(locate);
+                    fTransaction.show(mapFragment);
                 }
                 break;
         }
@@ -68,6 +72,6 @@ public class MainFragment extends Fragment implements RadioGroup.OnCheckedChange
 
     private void hideAllFragment(FragmentTransaction fTransaction) {
         if (main != null) fTransaction.hide(main);
-        if (locate != null) fTransaction.hide(locate);
+        if (mapFragment != null) fTransaction.hide(mapFragment);
     }
 }

@@ -26,9 +26,11 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import tool.ConnectThread;
 import static android.content.ContentValues.TAG;
+import com.example.notification.locate;
 
 import com.example.notification.MainService;
 import com.example.notification.R;
+import com.google.android.gms.maps.SupportMapFragment;
 
 
 public class MyFragment extends Fragment {
