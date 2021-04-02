@@ -25,33 +25,26 @@ import androidx.fragment.app.Fragment;
 import java.util.Set;
 import java.util.regex.Pattern;
 import tool.ConnectThread;
-import static android.content.ContentValues.TAG;
-import com.example.notification.locate;
-
 import com.example.notification.MainService;
 import com.example.notification.R;
-import com.google.android.gms.maps.SupportMapFragment;
 
 
-public class MyFragment extends Fragment {
-    private int num;
+
+public class MyFragment extends Fragment
+{
     //Bluetooth
     private CompanionDeviceManager deviceManager;
     private AssociationRequest pairingRequest;
     private BluetoothDeviceFilter deviceFilter;
     private  BluetoothSocket mmSocket;
+    //ScreenMessage
     private ProgressDialog dialog;
     private TextView connectStatus;
     Set<BluetoothDevice> pairedDevices =  BluetoothAdapter.getDefaultAdapter().getBondedDevices();
 
-    public MyFragment(int content) {
-        this.num = content;
-    }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
-        if(this.num==1)
-        {
             //view
             View view = inflater.inflate(R.layout.frament_home, container, false);
             //button
@@ -80,12 +73,6 @@ public class MyFragment extends Fragment {
             // 將 BroadcastReceiver 在 Activity 掛起來。
             requireActivity().registerReceiver(receiver, filter);
             return view;
-        }
-        else
-        {
-            View view = inflater.inflate(R.layout.locate, container, false);
-            return view;
-        }
     }
 
     private void bluetoothPair()

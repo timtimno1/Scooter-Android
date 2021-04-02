@@ -11,17 +11,18 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.example.notification.Locate;
 import com.example.notification.MainActivity;
 import com.example.notification.R;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.example.notification.locate;
 
 public class MainFragment extends Fragment implements RadioGroup.OnCheckedChangeListener{
     private RadioGroup rg_tab_bar;
     private RadioButton rb_main;
 
     //Fragment Object
-    private MyFragment main, locate;
+    private MyFragment main;
+    private Locate locate;
     //private MainFragment fragment_main;
     private FragmentManager fManager;
     SupportMapFragment mapFragment ;
@@ -50,28 +51,28 @@ public class MainFragment extends Fragment implements RadioGroup.OnCheckedChange
         switch (checkedId) {
             case R.id.rb_main:
                 if (main == null) {
-                    main = new MyFragment(1);
+                    main = new MyFragment();
                     fTransaction.add(R.id.ly_content, main);
                 } else {
                     fTransaction.show(main);
                 }
                 break;
             case R.id.rb_locate:
-                if (mapFragment == null) {
-                    com.example.notification.locate ii=new locate();
-                    mapFragment = SupportMapFragment.newInstance();
-                    mapFragment.getMapAsync(ii);
-                    fTransaction.add(R.id.ly_content, mapFragment);
+                if (locate == null) {
+                    locate=new Locate();
+                    fTransaction.add(R.id.ly_content,locate);
+
                 } else {
-                    fTransaction.show(mapFragment);
+                    fTransaction.show(locate);
                 }
                 break;
         }
         fTransaction.commit();
+
     }
 
     private void hideAllFragment(FragmentTransaction fTransaction) {
         if (main != null) fTransaction.hide(main);
-        if (mapFragment != null) fTransaction.hide(mapFragment);
+        if (locate != null) fTransaction.hide(locate);
     }
 }
