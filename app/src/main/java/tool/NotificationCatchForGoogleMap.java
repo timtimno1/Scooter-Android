@@ -44,11 +44,23 @@ public class NotificationCatchForGoogleMap
         byte[] biArray;
         byte bitmapW=0;
         int dis=-1;
+        String unit="";
 
-        Pattern pattern=Pattern.compile("^\\d+");
-        Matcher matcher=pattern.matcher(title);
-        if(matcher.find())
-            dis=Integer.parseInt(matcher.group().trim());
+        title=title.replaceAll("-.*", "").trim();
+
+        //distance catch
+        Pattern patternDis=Pattern.compile("^\\d+");
+        Matcher matcherDis=patternDis.matcher(title);
+        if(matcherDis.find())
+            dis=Integer.parseInt(matcherDis.group().trim());
+
+        //distance unit catch
+       /* Pattern patternUnit=Pattern.compile("\\W$");
+        Matcher matcherUnit=patternUnit.matcher(title);
+        if(matcherUnit.find())
+            unit=matcherUnit.group();*/
+        unit=title.substring(title.length()-1,title.length());
+
 
         try
         {
@@ -67,7 +79,7 @@ public class NotificationCatchForGoogleMap
                 else if (Cont==feature[index][1])
                     direction = "左";
 
-            if(dis>0 && dis<50 && dirStatus==noDir)
+            if(unit.equals("尺") && dis>0 && dis<200 && dirStatus==noDir)
             {
                 if(Cont==feature[index][0])
                 {
@@ -81,10 +93,9 @@ public class NotificationCatchForGoogleMap
                     send(new byte[]{1});
                 }
             }
-            else if( dis>50 || dis<0)
+            else if( (unit.equals("里") || dis>200 || dis<0) && (dirStatus==right || dirStatus==left))
             {
-                if(dirStatus==right || dirStatus==left)
-                    send(new byte[]{2});
+                send(new byte[]{2});
                 dirStatus=noDir;
             }
         }
@@ -95,7 +106,7 @@ public class NotificationCatchForGoogleMap
 
 
         string = "\n\n" +
-                "距離:" + title.replaceAll("-.*", "") + "\n\n" +
+                "距離:" + title + "Unit"+ unit +"\n\n" +
                 "下個轉彎方向:" + direction + "轉" + "Cont:" + Cont + " Resolution:" + bitmapW + "\n\n" +
                 "到達時間:" + text + "\n\n";
 
