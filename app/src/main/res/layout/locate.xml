@@ -30,7 +30,7 @@
             tools:ignore="Suspicious0dp"
             android:padding="11dp">
             <Button
-                android:id="@+id/bottom1"
+                android:id="@+id/getScooterGps"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/scooter" />

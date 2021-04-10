@@ -61,7 +61,6 @@ public class MainFragment extends Fragment implements RadioGroup.OnCheckedChange
                 if (locate == null) {
                     locate=new Locate();
                     fTransaction.add(R.id.ly_content,locate);
-
                 } else {
                     fTransaction.show(locate);
                 }

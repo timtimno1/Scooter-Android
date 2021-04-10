@@ -32,7 +32,7 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" /> <!-- API map key in value -->
         <activity
-            android:name=".locate"
+            android:name=".Locate"
             android:label="@string/title_activity_locate" /> <!-- -android:usesCleartextTraffic="true" -->
         <activity android:name=".MainActivity" />
         <activity android:name=".Register"/>
@@ -53,6 +53,7 @@
             </intent-filter>
         </service>
         <service android:name=".MainService" />
+        <service android:name=".getGpsService"/>
     </application>
 
 </manifest>

@@ -116,7 +116,7 @@ public class MainService extends Service
 
         mp=MediaPlayer.create(this, Settings.System.DEFAULT_RINGTONE_URI);
         mp.setLooping(true);
-        mp.start();
+        //mp.start();
         Log.e("Service", "onCreate");
         //stopSelf();
     }
@@ -167,7 +167,7 @@ public class MainService extends Service
         timer.cancel();
         task.cancel();
         ii.cancel();
-        mp.stop();
+        //mp.stop();
         message.putInt("connectStatus",disconnect);
         intent.putExtras(message);
         sendBroadcast(intent);
