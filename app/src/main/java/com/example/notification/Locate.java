@@ -65,7 +65,7 @@ public class Locate extends Fragment implements OnMapReadyCallback {
 
         view =  inflater.inflate(R.layout.locate, container, false);
         Intent intent = new Intent(getActivity(),getGpsService.class);
-        getActivity().bindService(intent, serviceConnection,  Context.BIND_AUTO_CREATE);
+        getActivity().bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
         return view;
     }
     @Override
@@ -99,9 +99,17 @@ public class Locate extends Fragment implements OnMapReadyCallback {
         // Add a marker in Sydney and move the camera
         final LatLng sydney = new LatLng(lat, lng);
         temp=mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, 15f));
-
-        start.setOnClickListener(v -> getGpsService.sync(mMap,temp,message));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, 18f));
+        getGpsService.sync(mMap,temp,message);
+       mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener()
+         {
+                @Override
+                public void onMapClick(LatLng point)
+                {
+                    getGpsService.moveCamera(false);
+                }
+         });
+        start.setOnClickListener(v -> getGpsService.moveCamera(true));
     }
 
 }

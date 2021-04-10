@@ -40,6 +40,7 @@ public class getGpsService extends Service
     private Marker marker;
     private TextView message;
     private HttpConnect ruc;
+    private boolean moveCamera;
     private String Tag="getGpsService";
         //服務創建
         @Override
@@ -90,6 +91,17 @@ public class getGpsService extends Service
             message=textView;
             this.marker=marker;
             timer.schedule(task,2000,500);
+        }
+        public void moveCamera(boolean moveCamera)
+        {
+            this.moveCamera=moveCamera;
+            if(moveCamera)
+            {
+                Projection proj = mMap.getProjection();
+                Point startPoint = proj.toScreenLocation(marker.getPosition());
+                final LatLng startLatLng = proj.fromScreenLocation(startPoint);
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(startLatLng.latitude, startLatLng.longitude), 18f));
+            }
         }
 
         // IBinder是远程对象的基本接口，是为高性能而设计的轻量级远程调用机制的核心部分。但它不仅用于远程
@@ -166,7 +178,8 @@ public class getGpsService extends Service
                 double lng = t * toPosition.longitude + (1 - t) * startLatLng.longitude;
                 double lat = t * toPosition.latitude + (1 - t) * startLatLng.latitude;
                 marker.setPosition(new LatLng(lat, lng));
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), 15f));
+                if(moveCamera)
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), 18f));
                 if (t < 1.0)
                 {
                     // Post again 16ms later.
