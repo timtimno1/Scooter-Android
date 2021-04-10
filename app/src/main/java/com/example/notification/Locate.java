@@ -27,6 +27,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -98,7 +99,7 @@ public class Locate extends Fragment implements OnMapReadyCallback {
 
         // Add a marker in Sydney and move the camera
         final LatLng sydney = new LatLng(lat, lng);
-        temp=mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+        temp=mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney").icon(BitmapDescriptorFactory.fromResource(R.drawable.scooter_icon)));
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, 15f));
 
         start.setOnClickListener(v -> getGpsService.sync(mMap,temp,message));
