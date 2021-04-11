@@ -13,7 +13,7 @@
         tools:context=".locate" />
 
     <LinearLayout
-        android:layout_width="40dp"
+        android:layout_width="50dp"
         android:layout_height="100dp"
         android:layout_gravity="right"
         android:orientation="vertical"
@@ -107,7 +107,7 @@
                 android:paddingTop="16dp"
                 android:text="定位中，請稍後"
                 android:textColor="#FFFFFF"
-                android:textSize="18sp" />
+                android:textSize="15sp" />
         </LinearLayout>
     </LinearLayout>
 </FrameLayout>

@@ -28,6 +28,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -149,15 +150,17 @@ public class Locate extends Fragment implements OnMapReadyCallback {
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener()
         {
             @Override
-            public void onMapClick(LatLng point)
-            {
-                getGpsService.moveCamera(false);
-            }
+            public void onMapClick(LatLng point) { getGpsService.moveCamera(false); }
         });
 
-        mMap.setOnCameraMoveStartedListener(new GoogleMap.OnCameraMoveStartedListener() {
+        mMap.setOnCameraMoveStartedListener(new GoogleMap.OnCameraMoveStartedListener()
+        {
             @Override
-            public void onCameraMoveStarted(int i) { getGpsService.moveCamera(false); }
+            public void onCameraMoveStarted(int i)
+            {
+                if(i==REASON_GESTURE)
+                    getGpsService.moveCamera(false);
+            }
         });
 
         start.setOnClickListener(v -> getGpsService.moveCamera(true));

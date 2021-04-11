@@ -23,6 +23,7 @@ import androidx.annotation.Nullable;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.Projection;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -42,7 +43,9 @@ import internet.Internet;
 public class getGpsService extends Service
 {
     private TimerTask task;
+    private TimerTask taskAddresses;
     private Timer timer=new Timer();
+    private Timer timerAddresses=new Timer();
     private GoogleMap mMap;
     private Marker marker;
     private TextView speedMessage;
@@ -70,6 +73,22 @@ public class getGpsService extends Service
                 {
                     RegisterUser ru = new RegisterUser();/**傳送資料**/
                     ru.execute("1");
+
+                }
+            };
+            taskAddresses=new TimerTask() {
+                @Override
+                public void run()
+                {
+                    List<Address> addresses=null;
+                    try
+                    {
+                        addresses=geocoder.getFromLocation(lat,lng,1);
+                        addressesMessage.setText(addresses.get(0).getLocality() + addresses.get(0).getThoroughfare() + addresses.get(0).getFeatureName());
+                    } catch (IOException e) {
+                        Log.e(Tag,"Geocoder get error");
+                        e.printStackTrace();
+                    }
                     Log.d(Tag,"getGps per 0.5s");
                 }
             };
@@ -90,6 +109,9 @@ public class getGpsService extends Service
             stopSelf(); //自殺服務
             pref.edit().putFloat("LAT",(float) lat).putFloat("LNG",(float)lng).commit();
             timer.cancel();
+            timerAddresses.cancel();
+            task.cancel();
+            taskAddresses.cancel();
             ruc.stop();
             Log.d(Tag,"onDestroy");
             super.onDestroy();
@@ -109,16 +131,29 @@ public class getGpsService extends Service
             pref=getSharedPreferences("GPS",MODE_PRIVATE);
             lat = pref.getFloat("LAT", 24.14458f);
             lng = pref.getFloat("LNG", 120.72863f);
+            lastLng=lng;
+            lastLat=lat;
 
             mMap=googleMap;
             this.speedMessage=speedMessage;
             this.addressesMessage=addressesMessage;
             this.geocoder=geocoder;
 
-            marker=mMap.addMarker(new MarkerOptions().position(new LatLng(lat,lng)).title(markerTitle));
+            marker=mMap.addMarker(new MarkerOptions().position(new LatLng(lat,lng)).title(markerTitle).icon(BitmapDescriptorFactory.fromResource(R.drawable.scooter_icon)));
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat,lng), 18f));
 
+            List<Address> addresses=null;
+            try
+            {
+                addresses=geocoder.getFromLocation(lat,lng,1);
+                addressesMessage.setText(addresses.get(0).getLocality() + addresses.get(0).getThoroughfare() + addresses.get(0).getFeatureName());
+            } catch (IOException e) {
+                Log.e(Tag,"Geocoder get error");
+                e.printStackTrace();
+            }
+
             timer.schedule(task,2000,500);
+            timerAddresses.schedule(taskAddresses,500,1000);
         }
 
         public void moveCamera(boolean moveCamera)
@@ -187,6 +222,8 @@ public class getGpsService extends Service
             return  result;
         }
     }
+
+
     public void animateMarker(final Marker marker, final LatLng toPosition, final boolean hideMarker)
     {
         final Handler handler = new Handler();
@@ -196,21 +233,11 @@ public class getGpsService extends Service
         Point startPoint = proj.toScreenLocation(marker.getPosition());
         final LatLng startLatLng = proj.fromScreenLocation(startPoint);
 
-        if(lastLat!=0.0 && lastLng!=0.0 && Math.abs(lastLat-lat)>3 && Math.abs(lastLng-lng)>3)
+
+        if(lastLat!=0.0 && lastLng!=0.0 && (Math.abs(lastLat-lat)>0.00001 || Math.abs(lastLng-lng)>0.00001))
         {
             lastLng=lng;
             lastLat=lat;
-            List<Address> addresses=null;
-            try
-            {
-                 addresses=geocoder.getFromLocation(lat,lng,1);
-                 addressesMessage.setText(addresses.get(0).getLocality() + addresses.get(0).getThoroughfare() + addresses.get(0).getFeatureName() + "號");
-            } catch (IOException e) {
-                Log.e(Tag,"Geocoder get error");
-                e.printStackTrace();
-            }
-
-
 
             final long duration = 500;
             final Interpolator interpolator = new LinearInterpolator();
@@ -221,11 +248,11 @@ public class getGpsService extends Service
                 public void run() {
                     long elapsed = SystemClock.uptimeMillis() - start;
                     float t = interpolator.getInterpolation((float) elapsed / duration);
-                    double lng = t * toPosition.longitude + (1 - t) * startLatLng.longitude;
-                    double lat = t * toPosition.latitude + (1 - t) * startLatLng.latitude;
+                    double lngTemp = t * toPosition.longitude + (1 - t) * startLatLng.longitude;
+                    double latTemp = t * toPosition.latitude + (1 - t) * startLatLng.latitude;
                     marker.setPosition(new LatLng(lat, lng));
                     if (moveCamera)
-                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), 18f));
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latTemp, lngTemp), 18f));
                     if (t < 1.0) {
                         // Post again 16ms later.
                         handler.postDelayed(this, 16);
@@ -238,20 +265,6 @@ public class getGpsService extends Service
                     }
                 }
             });
-        }
-        else if(lastLat==0.0 || lastLng==0.0)
-        {
-            List<Address> addresses=null;
-            lastLng=lng;
-            lastLat=lat;
-            try
-            {
-                addresses=geocoder.getFromLocation(lat,lng,1);
-                addressesMessage.setText(addresses.get(0).getLocality() + addresses.get(0).getThoroughfare() + addresses.get(0).getFeatureName() + "號");
-            } catch (IOException e) {
-                Log.e(Tag,"Geocoder get error");
-                e.printStackTrace();
-            }
         }
     }
 }
