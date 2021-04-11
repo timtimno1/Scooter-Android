@@ -58,7 +58,7 @@ public class Register extends AppCompatActivity
     {
         class RegisterUser extends AsyncTask<String, Void, String>
         {
-            HttpConnect ruc = new HttpConnect();/**使用Creatmem.class的功能**/
+            HttpConnect ruc = new HttpConnect(false);/**使用Creatmem.class的功能**/
             @Override
             protected void onPreExecute()
             {

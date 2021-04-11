@@ -54,7 +54,7 @@ public class LoginMain extends AppCompatActivity
     }
     private void singIn(String userName,String password)
     {
-        HttpConnect send=new HttpConnect();
+        HttpConnect send=new HttpConnect(false);
         class SingInUser extends AsyncTask<String,Void,String >
         {
             @Override
@@ -66,7 +66,6 @@ public class LoginMain extends AppCompatActivity
             protected void onPostExecute(String s)
             {
                 super.onPostExecute(s);
-                send.close();
                 Toast.makeText(getApplicationContext(), s, Toast.LENGTH_SHORT).show();
                 if(s.equals("登入成功!"))
                 {

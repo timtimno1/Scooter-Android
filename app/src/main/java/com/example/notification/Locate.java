@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Point;
+import android.location.Geocoder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -33,11 +34,14 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class Locate extends Fragment implements OnMapReadyCallback {
 
+    private final String Tag="Locate";
     private GoogleMap mMap;
-    private TextView message;
+    private TextView speedMessage;
+    private TextView addressesMessage;
     private Button start;
     private SupportMapFragment mapFragment;
     private View view;
@@ -51,6 +55,7 @@ public class Locate extends Fragment implements OnMapReadyCallback {
             // 獲取服務的操作對象
             getGpsService.MyBinder binder = (getGpsService.MyBinder)service;
             getGpsService=binder.getService();// 獲取到的Service即MyService
+            getGpsService.sync(mMap,speedMessage,addressesMessage,new Geocoder(getActivity(), Locale.TRADITIONAL_CHINESE));
         }
         @Override
         public void onServiceDisconnected(ComponentName name)
@@ -62,6 +67,7 @@ public class Locate extends Fragment implements OnMapReadyCallback {
     @Override
     public View onCreateView (LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
+        Log.d(Tag,"onCreateView");
 
         view =  inflater.inflate(R.layout.locate, container, false);
         Intent intent = new Intent(getActivity(),getGpsService.class);
@@ -72,10 +78,57 @@ public class Locate extends Fragment implements OnMapReadyCallback {
     public void onStart( )
     {
         super.onStart();
+        Log.d(Tag,"onStart");
+
         mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-        message=(TextView) view.findViewById(R.id.textView1);
+        speedMessage=(TextView) view.findViewById(R.id.textView1);
+        addressesMessage=(TextView) view.findViewById(R.id.textView3);
         start=(Button) view.findViewById(R.id.getScooterGps);
+
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+        Log.d(Tag,"onResume");
+    }
+
+    @Override
+    public void onPause()
+    {
+        super.onPause();
+        Log.d(Tag,"onPause");
+    }
+
+    @Override
+    public void onStop()
+    {
+        super.onStop();
+        Log.d(Tag,"onStop");
+    }
+
+    @Override
+    public void onDestroyView()
+    {
+        super.onDestroyView();
+        Log.d(Tag,"onDestroyView");
+    }
+
+    @Override
+    public void onDestroy()
+    {
+        super.onDestroy();
+        Log.d(Tag,"onDestroy");
+    }
+
+    @Override
+    public void onDetach()
+    {
+        super.onDetach();
+        getActivity().unbindService(serviceConnection);
+        Log.d(Tag,"onDetach");
     }
 
     /**
@@ -92,23 +145,21 @@ public class Locate extends Fragment implements OnMapReadyCallback {
     public void onMapReady(GoogleMap googleMap)
     {
         mMap = googleMap;
-        Marker temp;
-        double lat=24.14458;
-        double lng=120.72863;
 
-        // Add a marker in Sydney and move the camera
-        final LatLng sydney = new LatLng(lat, lng);
-        temp=mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, 18f));
-        getGpsService.sync(mMap,temp,message);
-       mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener()
-         {
-                @Override
-                public void onMapClick(LatLng point)
-                {
-                    getGpsService.moveCamera(false);
-                }
-         });
+        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener()
+        {
+            @Override
+            public void onMapClick(LatLng point)
+            {
+                getGpsService.moveCamera(false);
+            }
+        });
+
+        mMap.setOnCameraMoveStartedListener(new GoogleMap.OnCameraMoveStartedListener() {
+            @Override
+            public void onCameraMoveStarted(int i) { getGpsService.moveCamera(false); }
+        });
+
         start.setOnClickListener(v -> getGpsService.moveCamera(true));
     }
 

@@ -33,34 +33,36 @@ public class HttpConnect
     private HttpsURLConnection conn;
     private BufferedWriter writer;
     private OutputStream os;
+    private InputStream is;
     private SSLContext sslContext;
     private SSLSocketFactory socketFactory;
     private HostnameVerifier hostnameVerifier;
-    public HttpConnect()
+    private boolean keepAline;
+    private boolean close;
+    public HttpConnect(boolean keepAline)
     {
+        this.keepAline=keepAline;
         TrustManager[] trustAllCerts=
+        {
+                new X509TrustManager()
                 {
-                        new X509TrustManager()
-                        {
-                            @Override
-                            public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException
-                            {
+                    @Override
+                    public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException
+                    {
+                    }
 
-                            }
+                    @Override
+                    public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException
+                    {
+                    }
 
-                            @Override
-                            public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException
-                            {
-
-                            }
-
-                            @Override
-                            public X509Certificate[] getAcceptedIssuers()
-                            {
-                                return new X509Certificate[0];
-                            }
-                        }
-                };
+                    @Override
+                    public X509Certificate[] getAcceptedIssuers()
+                    {
+                        return new X509Certificate[0];
+                    }
+                }
+        };
         hostnameVerifier=new HostnameVerifier()
         {
             @Override
@@ -69,16 +71,20 @@ public class HttpConnect
                 return true;
             }
         };
-        try {
+        try
+        {
             sslContext =SSLContext.getInstance("TLS");
             sslContext.init(null,trustAllCerts,null);
             socketFactory=sslContext.getSocketFactory();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (KeyManagementException e) {
+        }
+        catch (NoSuchAlgorithmException e)
+        {
             e.printStackTrace();
         }
-
+        catch (KeyManagementException e)
+        {
+            e.printStackTrace();
+        }
     }
     public String sendPostRequest(String requestURL, HashMap<String, String> postDataParams)
     {
@@ -87,21 +93,18 @@ public class HttpConnect
         try {
             url = new URL(requestURL);
 
+            conn = (HttpsURLConnection) url.openConnection();/**設定connection物件**/
 
-
-                conn = (HttpsURLConnection) url.openConnection();/**設定connection物件**/
-
-                conn.setHostnameVerifier(hostnameVerifier);
-                //conn.setRequestProperty("Connection","close");
-                /**HttpURLConnection是基於HTTP協定的，其底層通過socket通信實現。如果不設置超時（timeout），在網路異常的情況下，可能會導致程式卡住而不繼續往下執行。**/
-                conn.setReadTimeout(15000);/**單位：毫秒**/
-                conn.setConnectTimeout(15000);
-                conn.setRequestMethod("POST");/**選用傳遞方法 >> POST (這樣表單資料傳送過程中不會被明文顯示)**/
-                //conn.setDoInput(true);
+            conn.setHostnameVerifier(hostnameVerifier);
+            /**HttpURLConnection是基於HTTP協定的，其底層通過socket通信實現。如果不設置超時（timeout），在網路異常的情況下，可能會導致程式卡住而不繼續往下執行。**/
+            conn.setReadTimeout(15000);/**單位：毫秒**/
+            conn.setConnectTimeout(15000);
+            conn.setRequestMethod("POST");/**選用傳遞方法 >> POST (這樣表單資料傳送過程中不會被明文顯示)**/
             conn.setSSLSocketFactory(socketFactory);
-                conn.setDoOutput(true);
-
-
+            //conn.setDoInput(true);
+            conn.setDoOutput(true);
+            if(!keepAline)
+                conn.setRequestProperty("Connection","close");
 
             os = conn.getOutputStream();
 
@@ -109,16 +112,17 @@ public class HttpConnect
             writer.write(getPostDataString(postDataParams));
             writer.flush();
             writer.close();
-            //os.close();
+
             int responseCode=conn.getResponseCode();
             if (responseCode == HttpURLConnection.HTTP_OK)
             {
-                BufferedReader br=new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                is=conn.getInputStream();
+                BufferedReader br=new BufferedReader(new InputStreamReader(is));
                 response = br.readLine();
             }
             else
             {
-                response="Error Create"+ conn.getResponseCode();
+                response="Error Create"+ responseCode;
             }
             while (true)
             {
@@ -126,7 +130,11 @@ public class HttpConnect
                     break;
             }
 
-            conn.getInputStream().close();
+            if(!close)
+            {
+                os.close();
+                is.close();
+            }
             conn.disconnect();
         }
         catch (Exception e)
@@ -137,14 +145,11 @@ public class HttpConnect
         return response;
     }
 
-    public void close()
+    public void stop()
     {
-        try {
-            conn.disconnect();
-            os.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        close=true;
+        conn.disconnect();
+
     }
     private void copyInputStreamToOutputStream(InputStream in, PrintStream out) throws IOException {
         byte[] buffer = new byte[1024];

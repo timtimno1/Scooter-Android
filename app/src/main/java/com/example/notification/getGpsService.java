@@ -2,12 +2,16 @@ package com.example.notification;
 
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Point;
+import android.location.Address;
+import android.location.Geocoder;
 import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.SystemClock;
+import android.service.autofill.FieldClassification;
 import android.util.Log;
 import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
@@ -21,9 +25,12 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.regex.Matcher;
@@ -36,18 +43,26 @@ public class getGpsService extends Service
 {
     private TimerTask task;
     private Timer timer=new Timer();
-    private  GoogleMap mMap;
+    private GoogleMap mMap;
     private Marker marker;
-    private TextView message;
+    private TextView speedMessage;
+    private TextView addressesMessage;
     private HttpConnect ruc;
+    private double lat;
+    private double lng;
+    private double lastLat;
+    private double lastLng;
+    private Geocoder geocoder;
+    private SharedPreferences pref;
     private boolean moveCamera;
+    private final String markerTitle="您的機車";
     private String Tag="getGpsService";
         //服務創建
         @Override
         public void onCreate()
         {
             super.onCreate();
-            ruc=new HttpConnect();
+            ruc=new HttpConnect(true);
             task=new TimerTask()
             {
                 @Override
@@ -55,6 +70,7 @@ public class getGpsService extends Service
                 {
                     RegisterUser ru = new RegisterUser();/**傳送資料**/
                     ru.execute("1");
+                    Log.d(Tag,"getGps per 0.5s");
                 }
             };
 
@@ -72,7 +88,9 @@ public class getGpsService extends Service
         public void onDestroy()
         {
             stopSelf(); //自殺服務
+            pref.edit().putFloat("LAT",(float) lat).putFloat("LNG",(float)lng).commit();
             timer.cancel();
+            ruc.stop();
             Log.d(Tag,"onDestroy");
             super.onDestroy();
         }
@@ -85,13 +103,24 @@ public class getGpsService extends Service
             return new MyBinder();
         }
 
-        public void sync(GoogleMap googleMap,Marker marker,TextView textView)
+
+        public void sync(GoogleMap googleMap,TextView speedMessage,TextView addressesMessage,Geocoder geocoder)
         {
+            pref=getSharedPreferences("GPS",MODE_PRIVATE);
+            lat = pref.getFloat("LAT", 24.14458f);
+            lng = pref.getFloat("LNG", 120.72863f);
+
             mMap=googleMap;
-            message=textView;
-            this.marker=marker;
+            this.speedMessage=speedMessage;
+            this.addressesMessage=addressesMessage;
+            this.geocoder=geocoder;
+
+            marker=mMap.addMarker(new MarkerOptions().position(new LatLng(lat,lng)).title(markerTitle));
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat,lng), 18f));
+
             timer.schedule(task,2000,500);
         }
+
         public void moveCamera(boolean moveCamera)
         {
             this.moveCamera=moveCamera;
@@ -102,6 +131,10 @@ public class getGpsService extends Service
                 final LatLng startLatLng = proj.fromScreenLocation(startPoint);
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(startLatLng.latitude, startLatLng.longitude), 18f));
             }
+        }
+        void stop()
+        {
+            ruc.stop();
         }
 
         // IBinder是远程对象的基本接口，是为高性能而设计的轻量级远程调用机制的核心部分。但它不仅用于远程
@@ -129,9 +162,7 @@ public class getGpsService extends Service
         protected void onPostExecute(String s)
         {
             super.onPostExecute(s);
-            double lat=0;
-            double lng=0;
-            String speed="0";
+            String speed="0.0";
             Pattern patternDis=Pattern.compile("(\\d+\\.\\d+)");
             Matcher matcherDis=patternDis.matcher(s);
 
@@ -142,7 +173,7 @@ public class getGpsService extends Service
                 matcherDis.find();
                 speed = matcherDis.group();
             }
-            message.setText(speed);
+            speedMessage.setText(speed);
             animateMarker(marker,new LatLng(lat,lng),false);
         }
 
@@ -165,38 +196,62 @@ public class getGpsService extends Service
         Point startPoint = proj.toScreenLocation(marker.getPosition());
         final LatLng startLatLng = proj.fromScreenLocation(startPoint);
 
-        final long duration = 500 ;
-        final Interpolator interpolator = new LinearInterpolator();
-
-        handler.post(new Runnable()
+        if(lastLat!=0.0 && lastLng!=0.0 && Math.abs(lastLat-lat)>3 && Math.abs(lastLng-lng)>3)
         {
-            @Override
-            public void run()
+            lastLng=lng;
+            lastLat=lat;
+            List<Address> addresses=null;
+            try
             {
-                long elapsed = SystemClock.uptimeMillis() - start;
-                float t = interpolator.getInterpolation((float) elapsed/duration);
-                double lng = t * toPosition.longitude + (1 - t) * startLatLng.longitude;
-                double lat = t * toPosition.latitude + (1 - t) * startLatLng.latitude;
-                marker.setPosition(new LatLng(lat, lng));
-                if(moveCamera)
-                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), 18f));
-                if (t < 1.0)
-                {
-                    // Post again 16ms later.
-                    handler.postDelayed(this, 16);
-                }
-                else
-                {
-                    if (hideMarker)
-                    {
-                        marker.setVisible(false);
-                    }
-                    else
-                    {
-                        marker.setVisible(true);
-                    }
-                }
+                 addresses=geocoder.getFromLocation(lat,lng,1);
+                 addressesMessage.setText(addresses.get(0).getLocality() + addresses.get(0).getThoroughfare() + addresses.get(0).getFeatureName() + "號");
+            } catch (IOException e) {
+                Log.e(Tag,"Geocoder get error");
+                e.printStackTrace();
             }
-        });
+
+
+
+            final long duration = 500;
+            final Interpolator interpolator = new LinearInterpolator();
+
+
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    long elapsed = SystemClock.uptimeMillis() - start;
+                    float t = interpolator.getInterpolation((float) elapsed / duration);
+                    double lng = t * toPosition.longitude + (1 - t) * startLatLng.longitude;
+                    double lat = t * toPosition.latitude + (1 - t) * startLatLng.latitude;
+                    marker.setPosition(new LatLng(lat, lng));
+                    if (moveCamera)
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), 18f));
+                    if (t < 1.0) {
+                        // Post again 16ms later.
+                        handler.postDelayed(this, 16);
+                    } else {
+                        if (hideMarker) {
+                            marker.setVisible(false);
+                        } else {
+                            marker.setVisible(true);
+                        }
+                    }
+                }
+            });
+        }
+        else if(lastLat==0.0 || lastLng==0.0)
+        {
+            List<Address> addresses=null;
+            lastLng=lng;
+            lastLat=lat;
+            try
+            {
+                addresses=geocoder.getFromLocation(lat,lng,1);
+                addressesMessage.setText(addresses.get(0).getLocality() + addresses.get(0).getThoroughfare() + addresses.get(0).getFeatureName() + "號");
+            } catch (IOException e) {
+                Log.e(Tag,"Geocoder get error");
+                e.printStackTrace();
+            }
+        }
     }
 }

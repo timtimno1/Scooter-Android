@@ -50,20 +50,25 @@ public class MainFragment extends Fragment implements RadioGroup.OnCheckedChange
         hideAllFragment(fTransaction);
         switch (checkedId) {
             case R.id.rb_main:
-                if (main == null) {
+                if(locate!=null)
+                    locate.onPause();
+                if (main == null)
+                {
                     main = new MyFragment();
                     fTransaction.add(R.id.ly_content, main);
-                } else {
-                    fTransaction.show(main);
                 }
+                else
+                    fTransaction.show(main);
                 break;
             case R.id.rb_locate:
-                if (locate == null) {
+                if (locate == null)
+                {
                     locate=new Locate();
                     fTransaction.add(R.id.ly_content,locate);
-                } else {
-                    fTransaction.show(locate);
                 }
+                else
+                    fTransaction.show(locate);
+
                 break;
         }
         fTransaction.commit();
