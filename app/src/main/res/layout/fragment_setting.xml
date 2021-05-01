@@ -4,21 +4,35 @@
     android:layout_width="match_parent"
     android:background="@color/bg_white"
     android:orientation="vertical">>
+
     <Button
         android:id="@+id/button5"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/account" />
+        android:text="@string/connect" />
 
     <Button
         android:id="@+id/button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="send" />
+        android:text="@string/disconnect" />
+
+    <Button
+        android:id="@+id/googleDriveConnect"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/googleDriveConnect" />
+
+    <Button
+        android:id="@+id/Pair"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="配對" />
 
     <TextView
         android:id="@+id/connectStatus"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="連接狀態" />
+
 </LinearLayout>

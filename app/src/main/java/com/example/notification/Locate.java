@@ -1,15 +1,18 @@
 package com.example.notification;
 
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 
 
+import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Point;
 import android.location.Geocoder;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -62,6 +65,7 @@ public class Locate extends Fragment implements OnMapReadyCallback {
         public void onServiceDisconnected(ComponentName name)
         {
             // 連接斷開
+
         }
     };
 
@@ -96,10 +100,21 @@ public class Locate extends Fragment implements OnMapReadyCallback {
         Log.d(Tag,"onResume");
     }
 
+    public void bind()
+    {
+        Intent intent = new Intent(getActivity(),getGpsService.class);
+        getActivity().bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public void onPause()
     {
         super.onPause();
+        ActivityManager manager = (ActivityManager) getActivity().getSystemService(getActivity().ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE))
+            if ("com.example.notification.getGpsService".equals(service.service.getClassName()))
+                getActivity().unbindService(serviceConnection);
         Log.d(Tag,"onPause");
     }
 
@@ -128,7 +143,7 @@ public class Locate extends Fragment implements OnMapReadyCallback {
     public void onDetach()
     {
         super.onDetach();
-        getActivity().unbindService(serviceConnection);
+        //getActivity().unbindService(serviceConnection);
         Log.d(Tag,"onDetach");
     }
 

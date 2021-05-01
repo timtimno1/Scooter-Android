@@ -14,7 +14,7 @@
                     android:id="@+id/toolbar"
                     android:layout_width="match_parent"
                     android:layout_height="?attr/actionBarSize"
-                    android:background="#00adb3"
+                    android:background="?attr/colorPrimary"
                     tools:ignore="MissingConstraints"
                     app:titleTextColor="@color/white"
                     app:title="@string/tab_menu_title"

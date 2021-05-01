@@ -129,6 +129,7 @@ public class MyBluetoothService
     {
         return isConnected;
     }
+
     // Call this method from the main activity to shut down the connection.
     public void cancel()
     {

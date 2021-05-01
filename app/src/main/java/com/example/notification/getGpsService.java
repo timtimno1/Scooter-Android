@@ -44,8 +44,8 @@ public class getGpsService extends Service
 {
     private TimerTask task;
     private TimerTask taskAddresses;
-    private Timer timer=new Timer();
-    private Timer timerAddresses=new Timer();
+    private Timer timer = new Timer();
+    private Timer timerAddresses = new Timer();
     private GoogleMap mMap;
     private Marker marker;
     private TextView speedMessage;
@@ -56,152 +56,178 @@ public class getGpsService extends Service
     private double lastLat;
     private double lastLng;
     private Geocoder geocoder;
-    private SharedPreferences pref;
+    private SharedPreferences pref;                 //存資料Class
+    private SharedPreferences prefUuid;
     private boolean moveCamera;
-    private final String markerTitle="您的機車";
-    private String Tag="getGpsService";
-        //服務創建
-        @Override
-        public void onCreate()
+    private final String markerTitle = "您的機車";
+    private String Tag = "getGpsService";
+    private String uuid;
+
+    //服務創建
+    @Override
+    public void onCreate()
+    {
+        super.onCreate();
+        ruc = new HttpConnect(true);
+        task = new TimerTask()
         {
-            super.onCreate();
-            ruc=new HttpConnect(true);
-            task=new TimerTask()
+            @Override
+            public void run()
             {
-                @Override
-                public void run()
+                RegisterUser ru = new RegisterUser();/**傳送資料**/
+                ru.execute(uuid);
+
+            }
+        };
+        taskAddresses = new TimerTask()
+        {
+            @Override
+            public void run()
+            {
+                List<Address> addresses = null;
+                try
                 {
-                    RegisterUser ru = new RegisterUser();/**傳送資料**/
-                    ru.execute("1");
-
+                    addresses = geocoder.getFromLocation(lat, lng, 1);
+                    addressesMessage.setText(addresses.get(0).getLocality() + addresses.get(0).getThoroughfare() + addresses.get(0).getFeatureName());
                 }
-            };
-            taskAddresses=new TimerTask() {
-                @Override
-                public void run()
+                catch (IOException e)
                 {
-                    List<Address> addresses=null;
-                    try
-                    {
-                        addresses=geocoder.getFromLocation(lat,lng,1);
-                        addressesMessage.setText(addresses.get(0).getLocality() + addresses.get(0).getThoroughfare() + addresses.get(0).getFeatureName());
-                    } catch (IOException e) {
-                        Log.e(Tag,"Geocoder get error");
-                        e.printStackTrace();
-                    }
-                    Log.d(Tag,"getGps per 0.5s");
+                    Log.e(Tag, "Geocoder get error");
+                    e.printStackTrace();
                 }
-            };
-
-        }
-
-        // 服務啟動
-        @Override
-        public int onStartCommand(Intent intent, int flags, int startId)
-        {
-            return super.onStartCommand(intent, flags, startId);
-        }
-
-        //服務銷毀
-        @Override
-        public void onDestroy()
-        {
-            stopSelf(); //自殺服務
-            pref.edit().putFloat("LAT",(float) lat).putFloat("LNG",(float)lng).commit();
-            timer.cancel();
-            timerAddresses.cancel();
-            task.cancel();
-            taskAddresses.cancel();
-            ruc.stop();
-            Log.d(Tag,"onDestroy");
-            super.onDestroy();
-        }
-
-        //綁定服務
-        @Nullable
-        @Override
-        public IBinder onBind(Intent intent)
-        {
-            return new MyBinder();
-        }
-
-
-        public void sync(GoogleMap googleMap,TextView speedMessage,TextView addressesMessage,Geocoder geocoder)
-        {
-            pref=getSharedPreferences("GPS",MODE_PRIVATE);
-            lat = pref.getFloat("LAT", 24.14458f);
-            lng = pref.getFloat("LNG", 120.72863f);
-            lastLng=lng;
-            lastLat=lat;
-
-            mMap=googleMap;
-            this.speedMessage=speedMessage;
-            this.addressesMessage=addressesMessage;
-            this.geocoder=geocoder;
-
-            marker=mMap.addMarker(new MarkerOptions().position(new LatLng(lat,lng)).title(markerTitle).icon(BitmapDescriptorFactory.fromResource(R.drawable.scooter_icon)));
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat,lng), 18f));
-
-            List<Address> addresses=null;
-            try
-            {
-                addresses=geocoder.getFromLocation(lat,lng,1);
-                addressesMessage.setText(addresses.get(0).getLocality() + addresses.get(0).getThoroughfare() + addresses.get(0).getFeatureName());
-            } catch (IOException e) {
-                Log.e(Tag,"Geocoder get error");
-                e.printStackTrace();
+                catch (IllegalArgumentException e)
+                {
+                    Log.e(Tag, "IllegalArgumentException");
+                    e.printStackTrace();
+                }
+                Log.d(Tag, "getGps per 0.5s");
             }
+        };
 
-            timer.schedule(task,2000,500);
-            timerAddresses.schedule(taskAddresses,500,1000);
+    }
+
+    // 服務啟動
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId)
+    {
+        return super.onStartCommand(intent, flags, startId);
+    }
+
+    //服務銷毀
+    @Override
+    public void onDestroy()
+    {
+        stopSelf(); //自殺服務
+        pref.edit().putFloat("LAT", (float) lat).putFloat("LNG", (float) lng).commit();
+        timer.cancel();
+        timerAddresses.cancel();
+        task.cancel();
+        taskAddresses.cancel();
+        ruc.stop();
+        Log.d(Tag, "onDestroy");
+        super.onDestroy();
+    }
+
+    //綁定服務
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent)
+    {
+        return new MyBinder();
+    }
+
+
+    public void sync(GoogleMap googleMap, TextView speedMessage, TextView addressesMessage, Geocoder geocoder)
+    {
+        pref = getSharedPreferences("GPS", MODE_PRIVATE);
+        prefUuid = getSharedPreferences("Login", MODE_PRIVATE);
+        lat = pref.getFloat("LAT", 24.14458f);
+        lng = pref.getFloat("LNG", 120.72863f);
+        lastLng = lng;
+        lastLat = lat;
+
+        uuid = prefUuid.getString("uuid", "");
+        Toast.makeText(getApplicationContext(), uuid, Toast.LENGTH_SHORT).show();
+
+        mMap = googleMap;
+        this.speedMessage = speedMessage;
+        this.addressesMessage = addressesMessage;
+        this.geocoder = geocoder;
+
+        marker = mMap.addMarker(new MarkerOptions().position(new LatLng(lat, lng)).title(markerTitle).icon(BitmapDescriptorFactory.fromResource(R.drawable.scooter_icon)));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), 18f));
+
+        List<Address> addresses = null;
+        try
+        {
+            addresses = geocoder.getFromLocation(lat, lng, 1);
+            addressesMessage.setText(addresses.get(0).getLocality() + addresses.get(0).getThoroughfare() + addresses.get(0).getFeatureName());
+        }
+        catch (IOException e)
+        {
+            Log.e(Tag, "Geocoder get error");
+            e.printStackTrace();
+        }
+        catch (IllegalArgumentException e)
+        {
+            Log.e(Tag, "IllegalArgumentException");
+            e.printStackTrace();
         }
 
-        public void moveCamera(boolean moveCamera)
-        {
-            this.moveCamera=moveCamera;
-            if(moveCamera)
-            {
-                Projection proj = mMap.getProjection();
-                Point startPoint = proj.toScreenLocation(marker.getPosition());
-                final LatLng startLatLng = proj.fromScreenLocation(startPoint);
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(startLatLng.latitude, startLatLng.longitude), 18f));
-            }
-        }
-        void stop()
-        {
-            ruc.stop();
-        }
+        timer.schedule(task, 2000, 500);
+        timerAddresses.schedule(taskAddresses, 500, 1000);
+    }
 
-        // IBinder是远程对象的基本接口，是为高性能而设计的轻量级远程调用机制的核心部分。但它不仅用于远程
-        // 调用，也用于进程内调用。这个接口定义了与远程对象交互的协议。
-        // 不要直接实现这个接口，而应该从Binder派生。
-        // Binder类已实现了IBinder接口
-        class MyBinder extends Binder
+    public void moveCamera(boolean moveCamera)
+    {
+        this.moveCamera = moveCamera;
+        if (moveCamera)
         {
-            /** * 获取Service的方法 * @return 返回PlayerService */
-            public getGpsService getService()
-            {
-                return getGpsService.this;
-            }
+            Projection proj = mMap.getProjection();
+            Point startPoint = proj.toScreenLocation(marker.getPosition());
+            final LatLng startLatLng = proj.fromScreenLocation(startPoint);
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(startLatLng.latitude, startLatLng.longitude), 18f));
         }
+    }
+
+    void stop()
+    {
+        ruc.stop();
+    }
+
+    // IBinder是远程对象的基本接口，是为高性能而设计的轻量级远程调用机制的核心部分。但它不仅用于远程
+    // 调用，也用于进程内调用。这个接口定义了与远程对象交互的协议。
+    // 不要直接实现这个接口，而应该从Binder派生。
+    // Binder类已实现了IBinder接口
+    class MyBinder extends Binder
+    {
+        /**
+         * 获取Service的方法 * @return 返回PlayerService
+         */
+        public getGpsService getService()
+        {
+            return getGpsService.this;
+        }
+    }
 
     private class RegisterUser extends AsyncTask<String, Void, String>
     {
         @Override
         protected void onPreExecute()
-    {
-        super.onPreExecute();/**當按下創見鈕，出現提式窗**/
-    }
+        {
+            super.onPreExecute();/**當按下創見鈕，出現提式窗**/
+        }
 
         @Override
         protected void onPostExecute(String s)
         {
             super.onPostExecute(s);
-            String speed="0.0";
-            Pattern patternDis=Pattern.compile("(\\d+\\.\\d+)");
-            Matcher matcherDis=patternDis.matcher(s);
+            String speed = "0.0";
+            Pattern patternDis = Pattern.compile("(\\d+\\.\\d+)");
+            Matcher matcherDis = patternDis.matcher(s);
 
-            if(matcherDis.find()) {
+            if (matcherDis.find())
+            {
                 lat = Double.parseDouble(matcherDis.group());
                 matcherDis.find();
                 lng = Double.parseDouble(matcherDis.group());
@@ -209,17 +235,17 @@ public class getGpsService extends Service
                 speed = matcherDis.group();
             }
             speedMessage.setText(speed);
-            animateMarker(marker,new LatLng(lat,lng),false);
+            animateMarker(marker, new LatLng(lat, lng), false);
         }
 
         @Override
-        protected String doInBackground(String... params)/**將資料放入hashmap，測試call by value or call br address**/
+        protected String doInBackground(String... params)/**將資料放入hashmap，**/
         {
-            HashMap<String, String> data = new HashMap<String,String>();
-            data.put("id",params[0]);
+            HashMap<String, String> data = new HashMap<String, String>();
+            data.put("uuid", params[0]);
 
-            String result = ruc.sendPostRequest(Internet.REGISTER_URL+"gpsPull.php",data);
-            return  result;
+            String result = ruc.sendPostRequest(Internet.REGISTER_URL + "gpsPull.php", data);
+            return result;
         }
     }
 
@@ -234,18 +260,20 @@ public class getGpsService extends Service
         final LatLng startLatLng = proj.fromScreenLocation(startPoint);
 
 
-        if(lastLat!=0.0 && lastLng!=0.0 && (Math.abs(lastLat-lat)>0.00001 || Math.abs(lastLng-lng)>0.00001))
+        if (lastLat != 0.0 && lastLng != 0.0 && (Math.abs(lastLat - lat) > 0.00001 || Math.abs(lastLng - lng) > 0.00001))
         {
-            lastLng=lng;
-            lastLat=lat;
+            lastLng = lng;
+            lastLat = lat;
 
             final long duration = 500;
             final Interpolator interpolator = new LinearInterpolator();
 
 
-            handler.post(new Runnable() {
+            handler.post(new Runnable()
+            {
                 @Override
-                public void run() {
+                public void run()
+                {
                     long elapsed = SystemClock.uptimeMillis() - start;
                     float t = interpolator.getInterpolation((float) elapsed / duration);
                     double lngTemp = t * toPosition.longitude + (1 - t) * startLatLng.longitude;
@@ -253,13 +281,19 @@ public class getGpsService extends Service
                     marker.setPosition(new LatLng(lat, lng));
                     if (moveCamera)
                         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latTemp, lngTemp), 18f));
-                    if (t < 1.0) {
+                    if (t < 1.0)
+                    {
                         // Post again 16ms later.
                         handler.postDelayed(this, 16);
-                    } else {
-                        if (hideMarker) {
+                    }
+                    else
+                    {
+                        if (hideMarker)
+                        {
                             marker.setVisible(false);
-                        } else {
+                        }
+                        else
+                        {
                             marker.setVisible(true);
                         }
                     }

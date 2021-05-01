@@ -39,31 +39,32 @@ public class HttpConnect
     private HostnameVerifier hostnameVerifier;
     private boolean keepAline;
     private boolean close;
+
     public HttpConnect(boolean keepAline)
     {
-        this.keepAline=keepAline;
-        TrustManager[] trustAllCerts=
-        {
-                new X509TrustManager()
+        this.keepAline = keepAline;
+        TrustManager[] trustAllCerts =
                 {
-                    @Override
-                    public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException
-                    {
-                    }
+                        new X509TrustManager()
+                        {
+                            @Override
+                            public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException
+                            {
+                            }
 
-                    @Override
-                    public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException
-                    {
-                    }
+                            @Override
+                            public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException
+                            {
+                            }
 
-                    @Override
-                    public X509Certificate[] getAcceptedIssuers()
-                    {
-                        return new X509Certificate[0];
-                    }
-                }
-        };
-        hostnameVerifier=new HostnameVerifier()
+                            @Override
+                            public X509Certificate[] getAcceptedIssuers()
+                            {
+                                return new X509Certificate[0];
+                            }
+                        }
+                };
+        hostnameVerifier = new HostnameVerifier()
         {
             @Override
             public boolean verify(String hostname, SSLSession session)
@@ -73,9 +74,9 @@ public class HttpConnect
         };
         try
         {
-            sslContext =SSLContext.getInstance("TLS");
-            sslContext.init(null,trustAllCerts,null);
-            socketFactory=sslContext.getSocketFactory();
+            sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, trustAllCerts, null);
+            socketFactory = sslContext.getSocketFactory();
         }
         catch (NoSuchAlgorithmException e)
         {
@@ -86,11 +87,13 @@ public class HttpConnect
             e.printStackTrace();
         }
     }
+
     public String sendPostRequest(String requestURL, HashMap<String, String> postDataParams)
     {
         URL url;
         String response = "0";
-        try {
+        try
+        {
             url = new URL(requestURL);
 
             conn = (HttpsURLConnection) url.openConnection();/**設定connection物件**/
@@ -103,8 +106,8 @@ public class HttpConnect
             conn.setSSLSocketFactory(socketFactory);
             //conn.setDoInput(true);
             conn.setDoOutput(true);
-            if(!keepAline)
-                conn.setRequestProperty("Connection","close");
+            if (!keepAline)
+                conn.setRequestProperty("Connection", "close");
 
             os = conn.getOutputStream();
 
@@ -113,24 +116,24 @@ public class HttpConnect
             writer.flush();
             writer.close();
 
-            int responseCode=conn.getResponseCode();
+            int responseCode = conn.getResponseCode();
             if (responseCode == HttpURLConnection.HTTP_OK)
             {
-                is=conn.getInputStream();
-                BufferedReader br=new BufferedReader(new InputStreamReader(is));
+                is = conn.getInputStream();
+                BufferedReader br = new BufferedReader(new InputStreamReader(is));
                 response = br.readLine();
             }
             else
             {
-                response="Error Create"+ responseCode;
+                response = "Error Create" + responseCode;
             }
             while (true)
             {
-                if(conn.getInputStream().read()==-1)
+                if (conn.getInputStream().read() == -1)
                     break;
             }
 
-            if(!close)
+            if (!close)
             {
                 os.close();
                 is.close();
@@ -140,18 +143,21 @@ public class HttpConnect
         catch (Exception e)
         {
             e.printStackTrace();
-            response=e.toString();
+            response = e.toString();
         }
         return response;
     }
 
     public void stop()
     {
-        close=true;
-        conn.disconnect();
+        close = true;
+        if (conn != null)
+            conn.disconnect();
 
     }
-    private void copyInputStreamToOutputStream(InputStream in, PrintStream out) throws IOException {
+
+    private void copyInputStreamToOutputStream(InputStream in, PrintStream out) throws IOException
+    {
         byte[] buffer = new byte[1024];
         int count;
         while ((count = in.read(buffer)) > 0)
@@ -160,10 +166,11 @@ public class HttpConnect
         }
     }
 
-    private String getPostDataString(HashMap<String, String> params) throws UnsupportedEncodingException {
+    private String getPostDataString(HashMap<String, String> params) throws UnsupportedEncodingException
+    {
         StringBuilder result = new StringBuilder();
         boolean first = true;
-        for(Map.Entry<String, String> entry : params.entrySet())
+        for (Map.Entry<String, String> entry : params.entrySet())
         {
             if (first)
                 first = false;

@@ -8,9 +8,12 @@
     -->
     <!-- <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" /> -->
     <uses-permission android:name="android.permission.BLUETOOTH" />
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />       <!--註冊藍芽控制權-->
-    <uses-permission android:name="android.permission.INTERNET" />              <!--註冊網路服務-->
-    <uses-feature android:name="android.software.companion_device_setup"/>      <!--註冊裝置頁面-->
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" /> <!-- 註冊藍芽控制權 -->
+    <uses-permission android:name="android.permission.INTERNET" /> <!-- 註冊網路服務 -->
+    <uses-feature android:name="android.software.companion_device_setup" /> <!-- 註冊裝置頁面 -->
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:allowBackup="true"
@@ -19,6 +22,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
+        <activity android:name=".WebDrive"></activity>
         <!-- 關閉狀態列、標題 android:theme= "@style/AppTheme.NoActionBar" -->
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
@@ -35,15 +39,16 @@
             android:name=".Locate"
             android:label="@string/title_activity_locate" /> <!-- -android:usesCleartextTraffic="true" -->
         <activity android:name=".MainActivity" />
-        <activity android:name=".Register"/>
+        <activity android:name=".Register" />
         <activity android:name=".LoginMain">
-
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity> <!-- 註冊通知欄擷取的服務 NotificationMonitorService -->
+        <activity android:name=".WebDrive" />
+
         <service
             android:name=".NotificationMonitorService"
             android:label="NotificationMonitor"
@@ -52,8 +57,23 @@
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
         </service>
-        <service android:name=".MainService" />
-        <service android:name=".getGpsService"/>
+
+        <service android:name="internet.MyFirebaseService" android:label="Firbase">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <service android:name=".MainService" android:label="ScooterBluetooth" >
+            <intent-filter>
+                <action android:name="tt" />
+            </intent-filter>
+        </service>
+
+        <service android:name=".getGpsService" android:label="GPS"/>
+        <service
+            android:name="Fragment.GoogleDriveConnectService"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
     </application>
 
 </manifest>
