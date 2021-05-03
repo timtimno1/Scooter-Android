@@ -17,4 +17,8 @@
     <color name="text_blue">#072ee8</color>
     <color name="text_topbar">#694E42</color>
     <color name="div_white">#E5E5E5</color>
+    <color name="blue_RURI">#005CAF</color>
+    <color name="green_TOKIWA">#1B813E</color>
+    <color name="yellow_YAMABUKI">#FFB11B</color>
+    <color name="red_GINSYU">#C73E3A</color>
 </resources>
