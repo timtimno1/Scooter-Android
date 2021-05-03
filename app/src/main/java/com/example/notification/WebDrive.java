@@ -201,6 +201,10 @@ public class WebDrive extends AppCompatActivity
                 {
                    tost("請先綁定");
                 }
+                else if(code==BluetoothConnectCallback.bluetoothNoSupport)
+                {
+                    tost("未支援藍芽，請更換設備");
+                }
                 dialog.dismiss();
                 Log.d("WebDrive","無法連線");
                 finish();

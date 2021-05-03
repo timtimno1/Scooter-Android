@@ -1,17 +1,21 @@
 package com.example.notification;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.navigation.ui.AppBarConfiguration;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothDevice;
@@ -24,12 +28,15 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.MenuItem;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -39,6 +46,7 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.messaging.FirebaseMessaging;
 
@@ -84,6 +92,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private boolean interruptIsDisable;
     private String TAG = "MainActivity";
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -116,6 +125,39 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     .show();
         }
 
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION))
+        {
+            View view = findViewById(android.R.id.content);
+            Snackbar.make(view, "This is explanation: Please give us permission", Snackbar.LENGTH_LONG)
+                    .setAction("OK", new View.OnClickListener()
+                    {
+                        @Override
+                        public void onClick(View view)
+                        {
+                            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 200);
+                        }
+                    }).show();
+        }
+        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+        {//未開啟定位權限
+
+            /*new AlertDialog.Builder(MainActivity.this)// 跳轉自開啟權限畫面，權限開啟後通知欄擷取服務將自動啟動。
+                    .setTitle("請開啟定位權限")
+                    .setMessage("請啟用定位權限")
+                    .setIcon(R.mipmap.ic_launcher_round)
+                    .setCancelable(false)
+                    .setPositiveButton("開啟", (d, w) -> super.startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")))// 對話框按鈕事件
+                    .show();*/
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 200);
+        }
+        else if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED)
+        {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 200);
+        }
+        else
+        {
+            Toast.makeText(MainActivity.this, "已開啟定位權限", Toast.LENGTH_LONG).show();
+        }
 
         drawer = findViewById(R.id.drawer_layout);
         toolbar = findViewById(R.id.toolbar);
@@ -158,6 +200,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     {
         //Bluetooth = (Button) findViewById(R.id.button5);
         pref = getSharedPreferences("Login", MODE_PRIVATE);
+        SharedPreferences prefPairMAC = getSharedPreferences("Bluetooth", MODE_PRIVATE);
+        if(!prefPairMAC.getString("PairMAC","noPair").equals("noPair"))
+        {
+            Intent intent = new Intent(this, BleCallBack.class);
+            startService(intent);
+        }
     }
 
 
@@ -206,7 +254,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 }
                 break;
             case R.id.nav_setting:
-                interruptIsDisable=true;
+                interruptIsDisable = true;
                 if (checkItem.getItemId() != R.id.nav_setting)
                 {
                     ft.addToBackStack(null);
@@ -215,7 +263,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     ft.add(R.id.navi_fragment, settingFragment);
                     ft.commit();
                 }
-                interruptIsDisable=false;
+                interruptIsDisable = false;
                 break;
             case R.id.nav_logout:
                 lastSet = false;

@@ -13,8 +13,8 @@ android {
 
 
         applicationId "com.example.notification"
-        minSdkVersion 21
-        targetSdkVersion 30
+        minSdkVersion 26
+        targetSdkVersion 29
         versionCode 1
         versionName "1.0"
 

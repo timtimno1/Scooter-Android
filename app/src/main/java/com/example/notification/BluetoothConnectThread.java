@@ -22,22 +22,36 @@ public class BluetoothConnectThread extends Thread
     private BluetoothConnectCallback callback;
     private ConnectThread connectThread;
     private BluetoothSocket mmSocket = null;
+    private boolean checkBind=true;
 
-    public BluetoothConnectThread(Context context,BluetoothConnectCallback callback)
+    public BluetoothConnectThread(Context context, BluetoothConnectCallback callback,boolean checkBind)
+    {
+        this.callback = callback;
+        this.checkBind=checkBind;
+        sharedPreferences = context.getSharedPreferences("Bluetooth", MODE_PRIVATE);
+        pairMAC = sharedPreferences.getString("PairMAC", "noPair");
+    }
+
+    public BluetoothConnectThread(Context context, BluetoothConnectCallback callback)
     {
         this.callback = callback;
         sharedPreferences = context.getSharedPreferences("Bluetooth", MODE_PRIVATE);
-        pairMAC=sharedPreferences.getString("PairMAC","noPair");
+        pairMAC = sharedPreferences.getString("PairMAC", "noPair");
     }
 
     @Override
     public void run()
     {
-        Set<BluetoothDevice> pairedDevices = BluetoothAdapter.getDefaultAdapter().getBondedDevices();
-        if (pairedDevices.size() > 0)
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
+        if (bluetoothAdapter == null)
         {
-            boolean pair=false;
-            if(pairMAC.equals("noPair"))
+            callback.onFailure(BluetoothConnectCallback.bluetoothNoSupport);
+        }
+        else if (pairedDevices.size() > 0)
+        {
+            boolean pair = false;
+            if (pairMAC.equals("noPair"))
             {
                 callback.onFailure(BluetoothConnectCallback.nobind);
                 return;
@@ -51,10 +65,10 @@ public class BluetoothConnectThread extends Thread
 
                 if (pairMAC.equals(deviceHardwareAddress))
                 {
-                    pair=true;
-                    for(ParcelUuid i:device.getUuids())
-                        Log.d("Bluetooth",i.toString());
-                    Log.d("Bluetooth",deviceHardwareAddress);
+                    pair = true;
+                    /*for (ParcelUuid i : device.getUuids())
+                        Log.d("Bluetooth", i.toString());*/
+                    Log.d("Bluetooth", deviceHardwareAddress);
                     connectThread = new ConnectThread(BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceHardwareAddress));
                     mmSocket = connectThread.getMmSocket();
                     connectThread.run();
@@ -67,8 +81,10 @@ public class BluetoothConnectThread extends Thread
                 }
             }
 
-            if(!pair)
+            if (!pair)
                 callback.onFailure(BluetoothConnectCallback.nobind);
         }
+        else
+            callback.onFailure(BluetoothConnectCallback.nobind);
     }
 }

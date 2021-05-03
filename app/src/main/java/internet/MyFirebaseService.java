@@ -87,7 +87,7 @@ public class MyFirebaseService  extends FirebaseMessagingService
                     new NotificationCompat.Builder(this, channelId)
                             .setContentTitle(receivedMap.get("title"))
                             .setSmallIcon(R.drawable.ic_launcher_foreground)
-                            .setContentText(receivedMap.get("body"))
+                            .setContentText(receivedMap.get("body") + " 觸發時間: "+receivedMap.get("time"))
                             .setAutoCancel(true)
                             .setSound(defaultSoundUri)
                             .setContentIntent(pendingIntent);
@@ -97,7 +97,7 @@ public class MyFirebaseService  extends FirebaseMessagingService
             // Since android Oreo notification channel is needed.
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 NotificationChannel channel = new NotificationChannel(channelId,
-                        "Channel human readable title",
+                        "機車移動通知",
                         NotificationManager.IMPORTANCE_DEFAULT);
                 notificationManager.createNotificationChannel(channel);
             }

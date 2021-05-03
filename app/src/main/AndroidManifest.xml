@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.notification">
+    <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="29" />
     <!--
          The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
          Google Maps Android API v2, but you must specify either coarse or fine
@@ -9,9 +10,12 @@
     <!-- <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" /> -->
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" /> <!-- 註冊藍芽控制權 -->
+    <uses-feature android:name="android.hardware.bluetooth_le"></uses-feature>
     <uses-permission android:name="android.permission.INTERNET" /> <!-- 註冊網路服務 -->
     <uses-feature android:name="android.software.companion_device_setup" /> <!-- 註冊裝置頁面 -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
@@ -71,6 +75,7 @@
         </service>
 
         <service android:name=".getGpsService" android:label="GPS"/>
+        <service android:name=".BleCallBack" android:label="BleCallBack"/>
         <service
             android:name="Fragment.GoogleDriveConnectService"
             android:permission="android.permission.BIND_JOB_SERVICE" />

@@ -29,6 +29,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.notification.BleCallBack;
 import com.example.notification.BluetoothConnectCallback;
 import com.example.notification.BluetoothConnectThread;
 import com.example.notification.MainActivity;
@@ -87,7 +88,7 @@ public class SettingFragment extends Fragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
-        dialog=new ProgressDialog(getContext());
+        dialog = new ProgressDialog(getContext());
         //view
         View view = inflater.inflate(R.layout.fragment_setting, container, false);
         mainActivity = (MainActivity) getActivity();
@@ -119,7 +120,7 @@ public class SettingFragment extends Fragment
                 dialog.setCanceledOnTouchOutside(false);
                 dialog.setCancelable(false);
 
-                if(status==MainService.connecting)
+                if (status == MainService.connecting)
                     dialog.show();
                 else
                     dialog.dismiss();
@@ -128,10 +129,13 @@ public class SettingFragment extends Fragment
                     connectStatus.setText(" 已連線");
                 else if (status == MainService.disconnect)
                     connectStatus.setText("連線中斷");
-                else if(status==BluetoothConnectCallback.nobind)
+                else if (status == BluetoothConnectCallback.nobind)
                     Toast.makeText(getContext(), "未配對，請先配對", Toast.LENGTH_SHORT).show();
-                else if(status==BluetoothConnectCallback.noSearch)
+                else if (status == BluetoothConnectCallback.noSearch)
                     Toast.makeText(getContext(), "請確認裝置在附近", Toast.LENGTH_SHORT).show();
+                else if (status == BluetoothConnectCallback.bluetoothNoSupport)
+                    Toast.makeText(getContext(), "未支援藍芽，請更換設備", Toast.LENGTH_SHORT).show();
+
             }
         };
 
@@ -160,6 +164,7 @@ public class SettingFragment extends Fragment
     public void onDestroy()
     {
         super.onDestroy();
+        dialog.dismiss();
         Log.d(TAG, "onDestroy");
         getActivity().unregisterReceiver(receiver);
     }
@@ -167,21 +172,27 @@ public class SettingFragment extends Fragment
     private void bluetoothPair()
     {
         boolean bluetoothIsEnable = false;
+        if (blueDefaultAdapter == null)
+        {
+            Toast.makeText(getContext(), "未支援藍芽，請更換設備", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         Set<BluetoothDevice> pairedDevices = blueDefaultAdapter.getBondedDevices();
         String ScotterMac = pref.getString("PairMAC", "noPair");
         boolean pair = false;
+
         if (pairedDevices.size() > 0)
         {
             // There are paired devices. Get the name and address of each paired device.
             for (BluetoothDevice device : pairedDevices)
-            {
                 if (ScotterMac.equals(device.getAddress()))
                 {
                     pair = true;
                     break;
                 }
-            }
         }
+
         if (pair)
             Toast.makeText(getContext(), "已配對過", Toast.LENGTH_SHORT).show();
         else
@@ -212,12 +223,12 @@ public class SettingFragment extends Fragment
 
                 deviceFilter = new BluetoothDeviceFilter.Builder()
                         //.addServiceUuid(new ParcelUuid(UUID.fromString("94f39d29-7d6d-437d-973b-fba39e49d4ee")), new ParcelUuid(UUID.fromString("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF")))
-                        .setNamePattern(Pattern.compile("raspberry"))
+                        .setNamePattern(Pattern.compile("raspberrypi"))
                         .build();
 
                 pairingRequest = new AssociationRequest.Builder()
                         .addDeviceFilter(deviceFilter)
-                        .setSingleDevice(false)
+                        .setSingleDevice(true)
                         .build();
 
                 deviceManager.associate(
@@ -265,7 +276,6 @@ public class SettingFragment extends Fragment
         {
             // User has chosen to pair with the Bluetooth device.
             BluetoothDevice deviceToPair = data.getParcelableExtra(CompanionDeviceManager.EXTRA_DEVICE);
-            deviceToPair.createBond();
 
             BroadcastReceiver receiver = new BroadcastReceiver()
             {
@@ -276,6 +286,7 @@ public class SettingFragment extends Fragment
                     if (mDevice.getBondState() == BluetoothDevice.BOND_BONDED)
                     {
                         //means device paired
+                        pref.edit().putString("PairMAC", deviceToPair.getAddress()).commit();
                         Log.d("Bluetooth", "Bond succe");
                         BluetoothConnectThread bluetoothConnectThread = new BluetoothConnectThread(getContext(), new BluetoothConnectCallback()
                         {
@@ -285,7 +296,8 @@ public class SettingFragment extends Fragment
                                 SharedPreferences pref = getActivity().getSharedPreferences("Login", MODE_PRIVATE);
                                 MyBluetoothService myBluetoothService = new MyBluetoothService(connectThread);
                                 myBluetoothService.write(("UUID:" + pref.getString("uuid", "")).getBytes());
-                                pref.edit().putString("PairMAC", deviceToPair.getAddress()).commit();
+
+                                connectThread.cancel();
                                 try
                                 {
                                     Thread.sleep(1000);
@@ -294,7 +306,7 @@ public class SettingFragment extends Fragment
                                 {
                                     e.printStackTrace();
                                 }
-                                connectThread.cancel();
+                                getContext().startService(new Intent(getContext(), BleCallBack.class));
                                 tost("配對完成");
                                 dialog.dismiss();
                             }
@@ -303,6 +315,7 @@ public class SettingFragment extends Fragment
                             public void onFailure(int code)
                             {
                                 Method m = null;
+                                pref.edit().remove("PairMAC").commit();
                                 try
                                 {
                                     m = deviceToPair.getClass().getMethod("removeBond", (Class[]) null);
@@ -313,10 +326,18 @@ public class SettingFragment extends Fragment
                                     e.printStackTrace();
                                 }
                                 dialog.dismiss();
-                                tost("無法配對，請重試");
+                                tost("無法配對，連線錯誤請重試 ERROR CODE" + code);
                                 Log.d("Bluetooth", "無法連線");
                             }
                         });
+                        try
+                        {
+                            Thread.sleep(1500);
+                        }
+                        catch (InterruptedException e)
+                        {
+                            e.printStackTrace();
+                        }
                         bluetoothConnectThread.start();
                         getActivity().unregisterReceiver(this);
                     }
@@ -330,6 +351,7 @@ public class SettingFragment extends Fragment
                         dialog.dismiss();
                         Toast.makeText(getContext(), "無法配對，請重試", Toast.LENGTH_SHORT).show();
                         Log.d("Bluetooth", "無法連線");
+                        getActivity().unregisterReceiver(this);
                     }
                 }
             };
@@ -337,6 +359,7 @@ public class SettingFragment extends Fragment
             IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
             // 將 BroadcastReceiver 在 Activity 掛起來。
             getActivity().registerReceiver(receiver, filter);
+            deviceToPair.createBond();
             //ConnectThread ii = new ConnectThread(deviceToPair);
             //ii.start();
             /*if(deviceToPair.getBondState()==BluetoothDevice.BOND_BONDED) {
@@ -368,7 +391,7 @@ public class SettingFragment extends Fragment
         {
             switch (requestCode)
             {
-                case 42:
+                case 40:
                     Toast.makeText(getContext(), "藍芽開啟成功，請重新點選配對", Toast.LENGTH_SHORT).show();
                     dialog.dismiss();
                     break;
@@ -418,6 +441,7 @@ public class SettingFragment extends Fragment
             }
         });
     }
+
     private void googleDriveConnect()
     {
 

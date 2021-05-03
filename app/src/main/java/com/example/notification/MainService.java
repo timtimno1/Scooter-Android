@@ -52,45 +52,6 @@ public class MainService extends Service
         message.putInt("connectStatus", connecting);
         intent.putExtras(message);
         sendBroadcast(intent);
-        /*Set<BluetoothDevice> pairedDevices =  BluetoothAdapter.getDefaultAdapter().getBondedDevices();
-        if (pairedDevices.size() > 0)
-        {
-            // There are paired devices. Get the name and address of each paired device.
-            for (BluetoothDevice device : pairedDevices)
-            {
-                String deviceName = device.getName();
-                String deviceHardwareAddress = device.getAddress(); // MAC address
-                if("raspberrypi".equals(deviceName))
-                {
-                    ii =new ConnectThread( BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceHardwareAddress));
-                    mmSocket=ii.getMmSocket();
-                    ii.start();
-                    while (true)
-                    {
-                        if (mmSocket.isConnected())
-                        {
-                            NotificationMonitorService.sentStatus = true;
-                            message.putInt("connectStatus",connect);
-                            break;
-                        }
-                        else if(count>10) {
-                            message.putInt("connectStatus", disconnect);
-                            break;
-                        }
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        count++;
-                    }
-                }
-                else
-                {
-                    //Toast.makeText(getApplicationContext(), "請先執行綁定", Toast.LENGTH_SHORT).show();
-                }
-            }
-        }*/
 
         BluetoothConnectThread bluetoothConnectThread = new BluetoothConnectThread(getApplicationContext(), new BluetoothConnectCallback()
         {
@@ -115,13 +76,10 @@ public class MainService extends Service
                         if (!myBluetoothService.isConnected())
                         {
                             NotificationMonitorService.sentStatus = false;
-                            message.putInt("connectStatus", disconnect);
-                            intent.putExtras(message);
-                            sendBroadcast(intent);
                             connectThread.cancel();
-                            stopSelf();
                             timer.cancel();
                             task.cancel();
+                            stopSelf();
                         }
                         message.putInt("connectStatus", connect);
                         intent.putExtras(message);
@@ -145,6 +103,12 @@ public class MainService extends Service
                 else if (code == BluetoothConnectCallback.nobind)
                 {
                     message.putInt("connectStatus", BluetoothConnectCallback.nobind);
+                    intent.putExtras(message);
+                    sendBroadcast(intent);
+                }
+                else if(code==BluetoothConnectCallback.bluetoothNoSupport)
+                {
+                    message.putInt("connectStatus", BluetoothConnectCallback.bluetoothNoSupport);
                     intent.putExtras(message);
                     sendBroadcast(intent);
                 }
