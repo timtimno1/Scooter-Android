@@ -44,7 +44,7 @@ public class MainService extends Service
     private Intent intent = new Intent("MainService");
     private Timer timer = new Timer();
     private TimerTask task;
-
+    private boolean shutDown;
     @Override
     public void onCreate()
     {
@@ -73,7 +73,7 @@ public class MainService extends Service
                     {
                         Boolean temp = myBluetoothService.isConnected();
                         Log.e("run", temp.toString());
-                        if (!myBluetoothService.isConnected())
+                        if (!myBluetoothService.isConnected() || shutDown)
                         {
                             NotificationMonitorService.sentStatus = false;
                             connectThread.cancel();
@@ -81,9 +81,12 @@ public class MainService extends Service
                             task.cancel();
                             stopSelf();
                         }
-                        message.putInt("connectStatus", connect);
-                        intent.putExtras(message);
-                        sendBroadcast(intent);
+                        else if(!shutDown)
+                        {
+                            message.putInt("connectStatus", connect);
+                            intent.putExtras(message);
+                            sendBroadcast(intent);
+                        }
 
                         isNotificationMonitorService();
                     }
@@ -188,6 +191,7 @@ public class MainService extends Service
     @Override
     public void onDestroy()
     {
+        shutDown=true;
         super.onDestroy();
         NotificationMonitorService.sentStatus = false;
         timer.cancel();

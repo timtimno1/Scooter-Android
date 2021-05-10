@@ -89,6 +89,8 @@ public class BleCallBack extends Service implements LeScanCallback
 
                 if (status == MainService.connect)
                     connectState=MainService.connect;
+                else if(status == BluetoothConnectCallback.nobind)
+                    stopSelf();
                 else
                     connectState=MainService.disconnect;
             }
