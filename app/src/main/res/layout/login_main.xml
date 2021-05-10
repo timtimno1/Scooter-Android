@@ -38,7 +38,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline"
         app:layout_constraintVertical_bias="0.266"
-        app:srcCompat="@drawable/b" />
+        app:srcCompat="@drawable/appname" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline4"
@@ -49,36 +49,41 @@
 
     <EditText
         android:id="@+id/editTextPassword"
-        android:layout_width="wrap_content"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        android:autofillHints=""
+        android:drawableLeft="@drawable/key_icon"
+        android:drawablePadding="5dp"
         android:ems="10"
         android:hint="@string/password_src"
         android:inputType="textPassword"
         app:layout_constraintBottom_toTopOf="@+id/guideline4"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.497"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        android:background="@drawable/edittext_circle"/>
 
     <EditText
         android:id="@+id/editTextUsername"
-        android:layout_width="wrap_content"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
+        android:drawableLeft="@drawable/account_icon"
+        android:drawablePadding="5dp"
         android:ems="10"
         android:hint="@string/account_src"
         android:inputType="textPersonName"
         app:layout_constraintBottom_toTopOf="@+id/editTextPassword"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline3"/>
+        app:layout_constraintTop_toTopOf="@+id/guideline3"
+        android:background="@drawable/edittext_circle"/>
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline5"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_begin="658dp" />
+        app:layout_constraintGuide_percent="0.9015048" />
 
     <Button
         android:id="@+id/button1"
