@@ -9,9 +9,11 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.net.UnknownHostException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
@@ -140,10 +142,18 @@ public class HttpConnect
             }
             conn.disconnect();
         }
+        catch (UnknownHostException e)
+        {
+            response="請檢查網路";
+        }
+        catch (ConnectException e)
+        {
+            response="伺服器錯誤";
+        }
         catch (Exception e)
         {
             e.printStackTrace();
-            response = e.toString();
+            response = "未知錯誤: "+e.toString();
         }
         return response;
     }

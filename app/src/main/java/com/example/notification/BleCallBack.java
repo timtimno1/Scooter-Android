@@ -106,6 +106,7 @@ public class BleCallBack extends Service implements LeScanCallback
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
+        startScan();
         task = new TimerTask()
         {
             @Override
@@ -113,8 +114,6 @@ public class BleCallBack extends Service implements LeScanCallback
             {
                 if(!isReady())
                     stopScan();
-                else
-                    startScan();
             }
         };
         timer.schedule(task, 500, 40000);

@@ -18,6 +18,8 @@ import java.io.ByteArrayOutputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static android.content.Context.MODE_PRIVATE;
+
 public class NotificationCatchForGoogleMap
 {
     private static final int noDir=0;
@@ -30,6 +32,7 @@ public class NotificationCatchForGoogleMap
     private static final byte[] resolution={36,48,72,90,95,113,120,126};
     private static final byte[] value={0,0,0,0,0,113,0,0};
     private static final byte[][] feature={{28,35},{30,30},{28,29},{28,31},{32,33},{6,9},{33,30},{28,39}};
+    private static int dirCentimeter;
 
     //接收資料
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -79,7 +82,7 @@ public class NotificationCatchForGoogleMap
                 else if (Cont==feature[index][1])
                     direction = "左";
 
-            if(unit.equals("尺") && dis>0 && dis<200 && dirStatus==noDir)
+            if(unit.equals("尺") && dis>0 && dis<dirCentimeter && dirStatus==noDir)
             {
                 if(Cont==feature[index][0])
                 {
@@ -173,5 +176,9 @@ public class NotificationCatchForGoogleMap
             if(i==resolution[j])
                 break;
         return j;
+    }
+    public static void setDirCentimeter(int dirCentimeter)
+    {
+        NotificationCatchForGoogleMap.dirCentimeter=dirCentimeter;
     }
 }

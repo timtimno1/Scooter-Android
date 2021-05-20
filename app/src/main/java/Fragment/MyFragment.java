@@ -108,7 +108,6 @@ public class MyFragment extends Fragment
         Cursor cursor = db.rawQuery("select time from time", null);
 
 
-
         int rows_num = cursor.getCount();//取得資料表列數
         if (rows_num != 0)
         {
@@ -133,7 +132,7 @@ public class MyFragment extends Fragment
             SQLiteDatabase db = helper.getReadableDatabase();
 
             myListAdapter.notifyItemRemoved(position);
-            helper.removeData(db,"time",arrayList.get(position));
+            helper.removeData(db, "time", arrayList.get(position));
             helper.close();//關閉資料庫，釋放記憶體，還需使用時不要關閉
 
             arrayList.remove(position);
@@ -168,7 +167,7 @@ public class MyFragment extends Fragment
         public void onBindViewHolder(@NonNull ViewHolder holder, int position)
         {  //取得元件的控制(每個item內的控制)
 
-            holder.tvId.setText("第"+String.valueOf(position+1)+"筆");
+            holder.tvId.setText("第" + String.valueOf(position + 1) + "筆");
             holder.tvSub1.setText(arrayList.get(position));
 
             holder.mView.setOnClickListener((v) ->

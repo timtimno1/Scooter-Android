@@ -18,6 +18,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import android.os.ParcelUuid;
@@ -26,6 +27,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -58,6 +60,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import tool.ConnectThread;
 import tool.MyBluetoothService;
+import tool.NotificationCatchForGoogleMap;
 import tool.SharedPreferencesHelper;
 
 import static android.content.Context.MODE_PRIVATE;
@@ -97,6 +100,7 @@ public class SettingFragment extends Fragment
         Button send = (Button) view.findViewById(R.id.button);
         Button googleDriveConnect = (Button) view.findViewById(R.id.googleDriveConnect);
         Button pair = (Button) view.findViewById(R.id.Pair);
+        Button autoTurnSignal = (Button) view.findViewById(R.id.AutoTurnSignalSet);
         //textView
         connectStatus = (TextView) view.findViewById(R.id.connectStatus);
         //getPref
@@ -106,6 +110,46 @@ public class SettingFragment extends Fragment
         Bluetooth.setOnClickListener(v -> connect());
         googleDriveConnect.setOnClickListener(v -> googleDriveConnect());
         pair.setOnClickListener(v -> bluetoothPair());
+        autoTurnSignal.setOnClickListener(v ->
+        {
+            AlertDialog.Builder alertDialog = new AlertDialog.Builder(getActivity());
+            View y = getLayoutInflater().inflate(R.layout.set_custom_dialog_layout_with_button, null);
+            alertDialog.setView(y);
+            Button btOK = y.findViewById(R.id.button_ok);
+            Button btC = y.findViewById(R.id.buttonCancel);
+            EditText editText = y.findViewById(R.id.editTextNumber);
+            AlertDialog dialog = alertDialog.create();
+            dialog.show();
+            btOK.setOnClickListener((v1 ->
+            {
+                int dirCentimeter = Integer.valueOf(editText.getText().toString() == "" ? "0" : editText.getText().toString());
+                AlertDialog.Builder twoDialog = new AlertDialog.Builder(getActivity());
+                SharedPreferences preferences = getActivity().getSharedPreferences("autoTurnSignal", MODE_PRIVATE);
+                if (dirCentimeter >= 30 && dirCentimeter <= 200)
+                {
+                    twoDialog.setTitle(dirCentimeter + "公尺嗎?");
+                    twoDialog.setPositiveButton("確認?", ((dialog1, which) ->
+                    {
+                        preferences.edit().putInt("dirCentimeter",dirCentimeter);
+                        NotificationCatchForGoogleMap.setDirCentimeter(dirCentimeter);
+                        dialog.dismiss();
+                    }));
+                    twoDialog.show();
+                }
+                else
+                {
+                    twoDialog.setTitle("請輸入正確數值");
+                    twoDialog.setPositiveButton("瞭解", (dialog1, which) ->
+                    {
+                    });
+                    twoDialog.show();
+                }
+            }));
+            btC.setOnClickListener((v1 ->
+            {
+                dialog.dismiss();
+            }));
+        });
 
         receiver = new BroadcastReceiver()
         {
@@ -183,8 +227,7 @@ public class SettingFragment extends Fragment
         boolean pair = false;
 
         if (pairedDevices.size() > 0)
-        {
-            // There are paired devices. Get the name and address of each paired device.
+        {// There are paired devices. Get the name and address of each paired device.
             for (BluetoothDevice device : pairedDevices)
                 if (ScotterMac.equals(device.getAddress()))
                 {

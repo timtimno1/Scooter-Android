@@ -31,6 +31,7 @@ import java.util.TimerTask;
 
 import tool.ConnectThread;
 import tool.MyBluetoothService;
+import tool.NotificationCatchForGoogleMap;
 
 public class MainService extends Service
 {
@@ -65,6 +66,7 @@ public class MainService extends Service
                 sendBroadcast(intent);
                 MyBluetoothService myBluetoothService = new MyBluetoothService(connectThread);
                 myBluetoothService.enableReadData();
+                NotificationCatchForGoogleMap.setDirCentimeter(getApplicationContext().getSharedPreferences("autoTurnSignal", MODE_PRIVATE).getInt("dirCentimeter",200));
                 NotificationMonitorService.sentStatus = true;
                 task = new TimerTask()
                 {
