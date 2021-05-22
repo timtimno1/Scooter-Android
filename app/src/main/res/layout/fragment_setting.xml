@@ -7,44 +7,21 @@
     android:clickable="true">
 
     <Button
-        android:id="@+id/button5"
-        android:layout_width="wrap_content"
-        android:layout_height="60dp"
-        android:background="@drawable/bluetooth"/>
-
-    <Button
-        android:id="@+id/button"
-        android:layout_width="wrap_content"
-        android:layout_height="60dp"
-        android:background="@drawable/bluetoothblock"/>
-
-    <Button
         android:id="@+id/googleDriveConnect"
         android:layout_width="wrap_content"
-        android:layout_height="60dp"
-        android:background="@drawable/googledrive"/>
+        android:layout_height="90dp"
+        android:background="@drawable/googledrive" />
 
     <Button
         android:id="@+id/Pair"
         android:layout_width="wrap_content"
-        android:layout_height="60dp"
+        android:layout_height="90dp"
         android:background="@drawable/bluetoothconnect" />
 
     <Button
         android:id="@+id/AutoTurnSignalSet"
         android:layout_width="wrap_content"
-        android:layout_height="60dp"
+        android:layout_height="90dp"
         android:background="@drawable/right" />
 
-    <TextView
-        android:id="@+id/connectStatus"
-        android:layout_width="wrap_content"
-        android:layout_height="60dp"
-        android:background="@drawable/bluetoothstatue"
-        android:text="連線狀態:"
-        android:textColor="#3b3b3b"
-        android:textSize="16dp"
-        android:paddingLeft="30dp"
-        android:paddingTop="17dp"
-        android:textStyle="bold"/>
 </LinearLayout>

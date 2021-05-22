@@ -76,7 +76,7 @@
                 app:layout_constraintGuide_percent="0.5" />
 
             <TextView
-                android:id="@+id/textView4"
+                android:id="@+id/connectStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="連接狀態"
@@ -86,7 +86,7 @@
                 app:layout_constraintTop_toTopOf="parent" />
 
             <Button
-                android:id="@+id/button3"
+                android:id="@+id/button5"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="連線"
@@ -95,7 +95,7 @@
                 app:layout_constraintStart_toStartOf="parent" />
 
             <Button
-                android:id="@+id/button4"
+                android:id="@+id/button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="中斷連線"

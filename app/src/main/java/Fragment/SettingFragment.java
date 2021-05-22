@@ -77,14 +77,10 @@ public class SettingFragment extends Fragment
     private AssociationRequest pairingRequest;
     private BluetoothDeviceFilter deviceFilter;
     private BluetoothAdapter blueDefaultAdapter = BluetoothAdapter.getDefaultAdapter();
-    private BluetoothSocket mmSocket;
     //ScreenMessage
     private ProgressDialog dialog;
-    private TextView connectStatus;
     private MainActivity mainActivity;
     private String TAG = "SettingFragment";
-    //Broadcast
-    BroadcastReceiver receiver;
     //SharedPreferences
     private SharedPreferences pref;
 
@@ -96,18 +92,12 @@ public class SettingFragment extends Fragment
         View view = inflater.inflate(R.layout.fragment_setting, container, false);
         mainActivity = (MainActivity) getActivity();
         //button
-        Button Bluetooth = (Button) view.findViewById(R.id.button5);
-        Button send = (Button) view.findViewById(R.id.button);
         Button googleDriveConnect = (Button) view.findViewById(R.id.googleDriveConnect);
         Button pair = (Button) view.findViewById(R.id.Pair);
         Button autoTurnSignal = (Button) view.findViewById(R.id.AutoTurnSignalSet);
-        //textView
-        connectStatus = (TextView) view.findViewById(R.id.connectStatus);
         //getPref
         pref = getActivity().getSharedPreferences("Bluetooth", MODE_PRIVATE);
         //buttonListener
-        send.setOnClickListener(v -> send());
-        Bluetooth.setOnClickListener(v -> connect());
         googleDriveConnect.setOnClickListener(v -> googleDriveConnect());
         pair.setOnClickListener(v -> bluetoothPair());
         autoTurnSignal.setOnClickListener(v ->
@@ -152,42 +142,6 @@ public class SettingFragment extends Fragment
                 dialog.dismiss();
             }));
         });
-
-        receiver = new BroadcastReceiver()
-        {
-            @Override
-            public void onReceive(Context context, Intent intent)
-            {
-                // 處理 Service 傳來的訊息。
-                Bundle message = intent.getExtras();
-                int status = message.getInt("connectStatus");
-
-                dialog.setTitle("連線中");
-                dialog.setCanceledOnTouchOutside(false);
-                dialog.setCancelable(false);
-
-                if (status == MainService.connecting)
-                    dialog.show();
-                else
-                    dialog.dismiss();
-
-                if (status == MainService.connect)
-                    connectStatus.setText("連線狀態:已連線");
-                else if (status == MainService.disconnect)
-                    connectStatus.setText("連線狀態:連線中斷");
-                else if (status == BluetoothConnectCallback.nobind)
-                    Toast.makeText(getContext(), "未配對，請先配對", Toast.LENGTH_SHORT).show();
-                else if (status == BluetoothConnectCallback.noSearch)
-                    Toast.makeText(getContext(), "請確認裝置在附近", Toast.LENGTH_SHORT).show();
-                else if (status == BluetoothConnectCallback.bluetoothNoSupport)
-                    Toast.makeText(getContext(), "未支援藍芽，請更換設備", Toast.LENGTH_SHORT).show();
-
-            }
-        };
-
-        IntentFilter filter = new IntentFilter("MainService");
-        // 將 BroadcastReceiver 在 Activity 掛起來。
-        getActivity().registerReceiver(receiver, filter);
         return view;
     }
 
@@ -212,7 +166,6 @@ public class SettingFragment extends Fragment
         super.onDestroy();
         dialog.dismiss();
         Log.d(TAG, "onDestroy");
-        getActivity().unregisterReceiver(receiver);
     }
 
     private void bluetoothPair()
@@ -432,20 +385,10 @@ public class SettingFragment extends Fragment
 
             // ... Continue interacting with the paired device.*/
         }
-        else if (resultCode == Activity.RESULT_OK)
+        else if (resultCode == Activity.RESULT_OK && requestCode==40)
         {
-            switch (requestCode)
-            {
-                case 40:
-                    Toast.makeText(getContext(), "藍芽開啟成功，請重新點選配對", Toast.LENGTH_SHORT).show();
-                    dialog.dismiss();
-                    break;
-                case 41:
-                    Toast.makeText(getContext(), "藍芽開啟成功，請重新點連線", Toast.LENGTH_SHORT).show();
-                    dialog.dismiss();
-                    break;
-            }
-
+            Toast.makeText(getContext(), "藍芽開啟成功，請重新點選配對", Toast.LENGTH_SHORT).show();
+            dialog.dismiss();
         }
         else
         {
@@ -454,26 +397,6 @@ public class SettingFragment extends Fragment
         }
     }
 
-    private void connect()
-    {
-        if (!blueDefaultAdapter.isEnabled())
-        {
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, 41);
-        }
-        else
-        {
-            Intent intent = new Intent("tt");
-            intent.setPackage(getContext().getPackageName());
-            getContext().startService(intent);
-        }
-    }
-
-    private void send()
-    {
-        Intent intent = new Intent(getActivity(), MainService.class);
-        getContext().stopService(intent);
-    }
 
     private void tost(String text)
     {

@@ -43,6 +43,7 @@ import java.util.regex.Pattern;
 import tool.ConnectThread;
 import tool.NewListDataSQL;
 
+import com.example.notification.BluetoothConnectCallback;
 import com.example.notification.MainActivity;
 import com.example.notification.MainService;
 import com.example.notification.R;
@@ -55,7 +56,6 @@ public class MyFragment extends Fragment
     private MyListAdapter myListAdapter; //管理ListView每一列的資料與畫面
     private SwipeRefreshLayout swipeRefreshLayout; //使用下拉更新
     private ArrayList<String> arrayList = new ArrayList<>();
-
 
     public MyFragment()
     {
@@ -87,6 +87,7 @@ public class MyFragment extends Fragment
         recyclerViewAction(mRecyclerView, arrayList, myListAdapter);
         return view;
     }
+
 
     private void makeData()
     {  //亂數產生資料
