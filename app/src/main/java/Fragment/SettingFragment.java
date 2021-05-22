@@ -170,9 +170,9 @@ public class SettingFragment extends Fragment
                     dialog.dismiss();
 
                 if (status == MainService.connect)
-                    connectStatus.setText(" 已連線");
+                    connectStatus.setText("連線狀態:已連線");
                 else if (status == MainService.disconnect)
-                    connectStatus.setText("連線中斷");
+                    connectStatus.setText("連線狀態:連線中斷");
                 else if (status == BluetoothConnectCallback.nobind)
                     Toast.makeText(getContext(), "未配對，請先配對", Toast.LENGTH_SHORT).show();
                 else if (status == BluetoothConnectCallback.noSearch)
