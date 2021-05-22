@@ -112,11 +112,12 @@ public class BleCallBack extends Service implements LeScanCallback
             @Override
             public void run()
             {
-                if(!isReady())
-                    stopScan();
+                stopScan();
+                if(isReady())
+                    startScan();
             }
         };
-        timer.schedule(task, 500, 40000);
+        timer.schedule(task, 500, 60000);
 
         return super.onStartCommand(intent, flags, startId);
     }

@@ -82,7 +82,7 @@ public class NotificationCatchForGoogleMap
                 else if (Cont==feature[index][1])
                     direction = "左";
 
-            if(unit.equals("尺") && dis>0 && dis<dirCentimeter && dirStatus==noDir)
+            if(unit.equals("尺") && dis>0 && dis<=dirCentimeter && dirStatus==noDir)
             {
                 if(Cont==feature[index][0])
                 {

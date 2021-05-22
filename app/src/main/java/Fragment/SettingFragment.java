@@ -113,6 +113,7 @@ public class SettingFragment extends Fragment
         autoTurnSignal.setOnClickListener(v ->
         {
             AlertDialog.Builder alertDialog = new AlertDialog.Builder(getActivity());
+            SharedPreferences preferences = getActivity().getSharedPreferences("autoTurnSignal", MODE_PRIVATE);
             View y = getLayoutInflater().inflate(R.layout.set_custom_dialog_layout_with_button, null);
             alertDialog.setView(y);
             Button btOK = y.findViewById(R.id.button_ok);
@@ -120,17 +121,18 @@ public class SettingFragment extends Fragment
             EditText editText = y.findViewById(R.id.editTextNumber);
             AlertDialog dialog = alertDialog.create();
             dialog.show();
+            TextView dirTitle=(TextView)y.findViewById(R.id.dirTitle);
+            dirTitle.setText("目前設定值為: "+preferences.getInt("dirCentimeter",200));
             btOK.setOnClickListener((v1 ->
             {
-                int dirCentimeter = Integer.valueOf(editText.getText().toString() == "" ? "0" : editText.getText().toString());
+                int dirCentimeter = Integer.valueOf(editText.getText().toString().equals("") ? "0" : editText.getText().toString());
                 AlertDialog.Builder twoDialog = new AlertDialog.Builder(getActivity());
-                SharedPreferences preferences = getActivity().getSharedPreferences("autoTurnSignal", MODE_PRIVATE);
                 if (dirCentimeter >= 30 && dirCentimeter <= 200)
                 {
                     twoDialog.setTitle(dirCentimeter + "公尺嗎?");
                     twoDialog.setPositiveButton("確認?", ((dialog1, which) ->
                     {
-                        preferences.edit().putInt("dirCentimeter",dirCentimeter);
+                        preferences.edit().putInt("dirCentimeter",dirCentimeter).commit();
                         NotificationCatchForGoogleMap.setDirCentimeter(dirCentimeter);
                         dialog.dismiss();
                     }));

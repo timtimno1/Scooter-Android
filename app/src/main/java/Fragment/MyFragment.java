@@ -90,19 +90,7 @@ public class MyFragment extends Fragment
 
     private void makeData()
     {  //亂數產生資料
-        for (int i = 0; i < 10; i++)
-        {
-            HashMap<String, String> hashMap = new HashMap<>();
-            hashMap.put("Id", "座號：" + String.format("%02d", i + 1));
-            hashMap.put("Sub1", String.valueOf(new Random().nextInt(80) + 20));
-            hashMap.put("Sub2", String.valueOf(new Random().nextInt(80) + 20));
-            hashMap.put("Avg", String.valueOf(
-                    (Integer.parseInt(hashMap.get("Sub1"))
-                            + Integer.parseInt(hashMap.get("Sub2"))) / 2));
-            hashMap.put(String.format("%02d", i + 1), String.format("%02d", i + 1));
 
-            //arrayList.add(hashMap);//將資料存入arrylist
-        }
         NewListDataSQL helper = new NewListDataSQL(getActivity(), "time");
         SQLiteDatabase db = helper.getReadableDatabase();
         Cursor cursor = db.rawQuery("select time from time", null);
