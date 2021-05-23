@@ -58,7 +58,7 @@ public class Register extends AppCompatActivity
     {
         class RegisterUser extends AsyncTask<String, Void, String>
         {
-            HttpConnect ruc = new HttpConnect();/**使用Creatmem.class的功能**/
+            HttpConnect ruc = new HttpConnect(false);/**使用Creatmem.class的功能**/
             @Override
             protected void onPreExecute()
             {
@@ -71,7 +71,7 @@ public class Register extends AppCompatActivity
                 Toast.makeText(getApplicationContext(), s, Toast.LENGTH_SHORT).show();
                 if(s.equals("帳號創建成功"))/**當字串比對成功返回登入頁面**/
                 {
-                    Toast.makeText(getApplicationContext(), s, Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(getApplicationContext(), s, Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent();
                     intent.setClass(Register.this,LoginMain.class);
                     startActivity(intent);
