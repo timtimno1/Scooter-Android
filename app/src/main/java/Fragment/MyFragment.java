@@ -56,6 +56,10 @@ public class MyFragment extends Fragment
     private MyListAdapter myListAdapter; //管理ListView每一列的資料與畫面
     private SwipeRefreshLayout swipeRefreshLayout; //使用下拉更新
     private ArrayList<String> arrayList = new ArrayList<>();
+    private TextView connectStatus;
+    //Broadcast
+    private BroadcastReceiver receiver;
+    private ProgressDialog dialog;
 
     public MyFragment()
     {
@@ -85,9 +89,28 @@ public class MyFragment extends Fragment
 
         });
         recyclerViewAction(mRecyclerView, arrayList, myListAdapter);
+        initBluetoothButton(view);
         return view;
     }
-
+    @Override
+    public void onDestroy()
+    {
+        super.onDestroy();
+        getActivity().unregisterReceiver(receiver);
+    }
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        if(resultCode == Activity.RESULT_OK && requestCode==41)
+        {
+            Toast.makeText(getContext(), "藍芽開啟成功，請重新點連線", Toast.LENGTH_SHORT).show();
+        }
+        else
+        {
+            Toast.makeText(getContext(), "使用著取消", Toast.LENGTH_SHORT).show();
+        }
+        dialog.dismiss();
+    }
 
     private void makeData()
     {  //亂數產生資料
@@ -195,5 +218,69 @@ public class MyFragment extends Fragment
                 myListAdapter.removeItem(position);
             }
         }).attachToRecyclerView(recyclerView);
+    }
+    private void initBluetoothButton(View view)
+    {
+        dialog=new ProgressDialog(getContext());
+        connectStatus = (TextView) view.findViewById(R.id.connectStatus);
+        Button Bluetooth = (Button) view.findViewById(R.id.button5);
+        Button send = (Button) view.findViewById(R.id.button);
+        send.setOnClickListener(v -> send());
+        Bluetooth.setOnClickListener(v -> connect());
+        receiver = new BroadcastReceiver()
+        {
+            @Override
+            public void onReceive(Context context, Intent intent)
+            {
+
+                // 處理 Service 傳來的訊息。
+                Bundle message = intent.getExtras();
+                int status = message.getInt("connectStatus");
+
+                dialog.setTitle("連線中");
+                dialog.setCanceledOnTouchOutside(false);
+                dialog.setCancelable(false);
+
+                if (status == MainService.connecting)
+                    dialog.show();
+                else
+                    dialog.dismiss();
+
+                if (status == MainService.connect)
+                    connectStatus.setText("連線狀態:已連線");
+                else if (status == MainService.disconnect)
+                    connectStatus.setText("連線狀態:連線中斷");
+                else if (status == BluetoothConnectCallback.nobind)
+                    Toast.makeText(getContext(), "未配對，請先配對", Toast.LENGTH_SHORT).show();
+                else if (status == BluetoothConnectCallback.noSearch)
+                    Toast.makeText(getContext(), "請確認裝置在附近", Toast.LENGTH_SHORT).show();
+                else if (status == BluetoothConnectCallback.bluetoothNoSupport)
+                    Toast.makeText(getContext(), "未支援藍芽，請更換設備", Toast.LENGTH_SHORT).show();
+
+            }
+        };
+        IntentFilter filter = new IntentFilter("MainService");
+        // 將 BroadcastReceiver 在 Activity 掛起來。
+        getActivity().registerReceiver(receiver, filter);
+    }
+    private void connect()
+    {
+        if (!BluetoothAdapter.getDefaultAdapter().isEnabled())
+        {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBtIntent, 41);
+        }
+        else
+        {
+            Intent intent = new Intent("tt");
+            intent.setPackage(getContext().getPackageName());
+            getContext().startService(intent);
+        }
+    }
+
+    private void send()
+    {
+        Intent intent = new Intent(getActivity(), MainService.class);
+        getContext().stopService(intent);
     }
 }
