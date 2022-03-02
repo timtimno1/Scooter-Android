@@ -18,7 +18,7 @@
 |	整合						|
 
 ## 介紹影片
-[![Everything Is AWESOME](https://i9.ytimg.com/vi_webp/MKq39cfuKiU/mqdefault.webp?v=61ece5cd&sqp=CIDLs48G&rs=AOn4CLDG1JZ-1XUmG8rgi_MGaL1J1ATxeA)](https://www.youtube.com/watch?v=MKq39cfuKiU "Everything Is AWESOME")
+[![Everything Is AWESOME](http://img.youtube.com/vi/MKq39cfuKiU/hqdefault.jpg)](https://www.youtube.com/watch?v=MKq39cfuKiU "Everything Is AWESOME")
 > 直接點選上方照片即可觀看影片
 
 ## 登陸畫面
