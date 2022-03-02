@@ -32,3 +32,14 @@
 
 ## 機車及時位置
 <img src="img/Location.png" width="20%" height="20%">
+
+## 此程式的功能
+負責處理即時位置、登入、註冊等
+
+## 其他相關程式
+
+總共透過三個程式完成本專案，分別為Android APP、PHP、Raspberry-pi(Python)
+
+[Scooter-PHP](https://github.com/timtimno1/Scooter-PHP)
+
+Scooter-RaspberryPi
